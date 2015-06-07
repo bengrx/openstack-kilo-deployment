@@ -1,0 +1,17 @@
+default install
+
+label install_ctl
+	menu label ^Install OpenStack ctl node
+	menu default
+	kernel ubuntu-installer/amd64/linux
+	append vga=788 initrd=ubuntu-installer/amd64/initrd.gz --- auto=true url=http://{{ boot_interface_address }}/preseed_ctl.cfg quiet 
+
+label install
+	menu label ^Install Ubuntu Trusty 14.04
+	kernel ubuntu-installer/amd64/linux
+	append vga=788 initrd=ubuntu-installer/amd64/initrd.gz --- quiet 
+
+label cli
+	menu label ^Command-line Install
+	kernel ubuntu-installer/amd64/linux
+	append tasks=standard pkgsel/language-pack-patterns= pkgsel/install-language-support=false vga=788 initrd=ubuntu-installer/amd64/initrd.gz --- quiet 

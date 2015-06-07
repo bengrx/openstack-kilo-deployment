@@ -6,6 +6,9 @@
 
    vars:
 
+     deployment_user: openstack
+
+     public_interface: "wlan0"
      boot_interface: "eth0"
      boot_interface_address: "192.168.10.1"
      boot_domain: "home"
