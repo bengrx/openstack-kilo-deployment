@@ -1,0 +1,33 @@
+---
+
+# - name: Update the apt cache
+#   shell: apt-get update --fix-missing
+
+# - name: Update all packages to latest version
+#   apt: upgrade=dist
+
+# - name: Ensure that terminator is installed
+#   apt: pkg=terminator state=installed
+
+# - name: Ensure that dnsmasq is installed
+#   apt: pkg=dnsmasq state=installed
+
+ - name: Copy the templated dnsmasq.conf file
+   template: src=dnsmasq.j2 dest=/etc/dnsmasq.conf
+
+ - name: Ensure that the dnsmasq service is started 
+   service: name=dnsmasq state=started
+
+ - name: Create the /srv/tftp directory
+   shell: mkdir -p /srv/tftp
+
+ - name: Check to see if the /var/tftp directory contains a netboot.tar.gz file already
+   shell: ls /srv/tftp/netboot.tar.gz | wc -l
+   register: tftp_dir_contents
+
+ - name: Download the netboot.tar.gz image from specified URL
+   get_url: url={{ remote_netboot_image_path }} dest=/srv/tftp/netboot.tar.gz mode=0440
+   when: '"{{ tftp_dir_contents.stdout }}" == "0"'
+
+ - name: Unzip the netboot.tar.gz in the tftp directory
+   unarchive: src=/srv/tftp/netboot.tar.gz dest=/srv/tftp/ copy=no
