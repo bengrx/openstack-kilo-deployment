@@ -1,0 +1,48 @@
+---
+
+ - name: Update the apt cache
+   apt: update_cache=yes
+   sudo: yes
+
+ - name: Ensure package ntp is installed
+   apt: pkg=ntp state=installed
+   sudo: yes
+
+ - name: Ensure package git is installed
+   apt: pkg=git state=installed
+   sudo: yes
+
+ - name: Ensure package wget is installed
+   apt: pkg=wget state=installed
+   sudo: yes
+
+ - name: Define client config for ntp in ntp.conf
+   shell: echo server {{ openstack_ctl_master }} iburst > /etc/ntp.conf
+   sudo: yes
+
+ - name: Restart the networking service
+   shell: ifdown {{ net_man_dev }} && ifup {{ net_man_dev }}
+   sudo: yes
+
+ - name: Delay for 3 seconds to give network services a chance to start
+   shell: sleep 3
+
+ - name: Restart the ntp server
+   shell: service ntp restart
+   sudo: yes
+
+ - name: Install Ubuntu Cloud archive keyring
+   apt: pkg=ubuntu-cloud-keyring state=installed
+   sudo: yes
+
+ - name: Install Ubuntu Cloud archive repository
+   shell: echo "deb http://ubuntu-cloud.archive.canonical.com/ubuntu" "trusty-updates/kilo main" > /etc/apt/sources.list.d/cloudarchive-kilo.list
+   sudo: yes
+
+ - name: Update the apt cache
+   apt: update_cache=yes
+   sudo: yes
+
+ - name: Upgrade all packages to latest version
+   apt: upgrade=dist
+   sudo: yes

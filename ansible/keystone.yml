@@ -1,0 +1,15 @@
+---
+
+- hosts: openstack-ctl-master-nodes
+
+  sudo: yes
+
+  vars:
+    env:
+      OS_TOKEN: "{{ keystone_admin_token }}"
+      OS_URL: "http://{{ openstack_ctl_master }}:35357/v2.0"
+
+  roles:
+
+    - keystone
+

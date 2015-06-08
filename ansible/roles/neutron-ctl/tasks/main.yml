@@ -1,0 +1,76 @@
+---
+
+ - name: Ensure that the neutron-server package is installed
+   apt: pkg=neutron-server state=installed
+
+ - name: Ensure that the neutron-plugin-ml2 package is installed
+   apt: pkg=neutron-plugin-ml2 state=installed
+
+ - name: Ensure that the python-neutronclient package is installed
+   apt: pkg=python-neutronclient state=installed
+
+ - name: Copy the templated neutron.conf file
+   template: src=neutron.conf dest=/etc/neutron/neutron.conf
+
+ - name: Copy the templated ml2_conf.ini file
+   template: src=ml2_conf.ini  dest=/etc/neutron/plugins/ml2/ml2_conf.ini
+
+ - name: Ensure the neutron-server service is restarted
+   shell: service neutron-server restart
+#   service: name=neutron-server state=restarted
+
+ - name: Ensure the nova-api service is restarted
+   shell: service nova-api restart
+#   service: name=nova-api state=restarted
+
+ - name: Populate the neutron database
+   shell: su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head" neutron
+
+ - name: Ensure the networking service is restarted
+   shell: ifdown {{ net_man_dev }} && ifup {{ net_man_dev }}
+#   service: name=networking state=restarted
+
+ - name: Ensure the nova-api service is restarted
+   shell: service nova-api restart
+#   service: name=nova-api state=restarted
+   
+ - name: Ensure the neutron-server service is restarted
+   shell: service neutron-server restart
+#   service: name=neutron-server state=restarted
+
+ - name: Check nova services are active
+   environment: env
+   shell: sleep 10;nova service-list | grep "up" | grep "nova-conductor\|nova-consoleauth\|nova-scheduler\|nova-cert\|nova-compute" | wc -l
+   register: nova_service_state
+
+ - name: Check nova services are active
+   debug: msg="Found {{ nova_service_state.stdout }} / 5 active nova services"
+   failed_when: "nova_service_state.stdout < '5'"
+
+ - name: Verify neutron-server process is loaded
+   shell: sleep 5;neutron ext-list | grep -v " alias\|---" | wc -l
+   environment: env
+   register: extension_status
+
+ - name: Verify neutron-server process is loaded
+   debug: msg="Found {{ extension_status.stdout }} neutron extensions"
+   failed_when: extension_status.stdout.find('0') != -1
+
+ - name: Verify neutron agents are connected
+   shell: sleep 45; neutron agent-list | grep "Metadata agent\|Open vSwitch agent\|L3 agent\|DHCP agent" | grep ":-)" | wc -l
+   environment: env
+   register: neutron_agent
+
+ - name: Verify neutron agents are connected
+   debug: msg="Found {{ neutron_agent.stdout }} of a minimum 4 agent services"
+   failed_when: "'{{ neutron_agent.stdout }}' < '4'"
+
+ - name: Verify neutron agent connectivity CPU node
+   shell: neutron agent-list | grep ":-)" | grep "Metadata agent\|Open vSwitch agent\|L3 agent\|DHCP agent\|Open vSwitch agent" | wc -l
+   environment: env
+   register: neutron_agent_b
+
+ - name: Verify neutron agent connectivity CPU node
+   debug: msg="Found {{ neutron_agent_b.stdout }} a minimum 5 agent services"
+   failed_when: "'{{ neutron_agent_b.stdout }}' < '5'"
+

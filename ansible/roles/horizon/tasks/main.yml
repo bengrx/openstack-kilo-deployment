@@ -1,0 +1,19 @@
+---
+
+ - name: Install the openstack-dashboard package
+   apt: pkg=openstack-dashboard state=installed
+
+ - name: Uninstall the Ubuntu horizon theme and reinstate the default theme
+   apt: pkg=openstack-dashboard-ubuntu-theme state=absent
+
+ - name: Copy the templated local_settings.py
+   template: src=local_settings.py dest=/etc/openstack-dashboard/local_settings.py
+
+ - name: Stop the keystone service
+   shell: service keystone stop; sleep 1
+
+ - name: Restart the apache2 service
+   shell: service apache2 restart
+
+ - name: Start the keystone service
+   shell: service keystone start

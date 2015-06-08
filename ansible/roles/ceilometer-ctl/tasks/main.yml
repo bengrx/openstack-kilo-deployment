@@ -1,0 +1,64 @@
+---
+
+ - name: Ensure that the package mongodb-server is installed
+   apt: pkg=mongodb-server state=installed
+
+ - name: Ensure that the package mongodb-clients is installed
+   apt: pkg=mongodb-clients state=installed
+
+ - name: Ensure that the package python-pymongo is installed
+   apt: pkg=python-pymongo state=installed
+
+ - name: Copy the template mongodb.conf file
+   template: src=mongodb.conf dest=/etc/mongodb.conf
+
+ - name: Restart the mongodb service
+   shell: service mongodb restart
+
+ - name: Create the ceilometer database
+   script: create-mongo-database.sh {{ inventory_hostname }} 2>/dev/null;sleep 1
+   environment: env
+   register: mogo_db_result
+
+ - name: Ensure that the package ceilometer-api is installed
+   apt: pkg=ceilometer-api state=installed
+
+ - name: Ensure that the package ceilometer-collector is installed
+   apt: pkg=ceilometer-collector state=installed
+
+ - name: Ensure that the package ceilometer-agent-central is installed
+   apt: pkg=ceilometer-agent-central state=installed
+
+ - name: Ensure that the package ceilometer-agent-notification is installed
+   apt: pkg=ceilometer-agent-notification state=installed
+
+ - name: Ensure that the package ceilometer-alarm-evaluator is installed
+   apt: pkg=ceilometer-alarm-evaluator state=installed
+
+ - name: Ensure that the package ceilometer-alarm-notifier is installed
+   apt: pkg=ceilometer-alarm-notifier  state=installed
+
+ - name: Ensure that the package python-ceilometerclient is installed
+   apt: pkg=python-ceilometerclient state=installed
+
+ - name: Copy the templated ceilometer.conf file
+   template: src=ceilometer.conf dest=/etc/ceilometer/ceilometer.conf
+
+ - name: Ensure that the ceilometer-agent-central service is restarted
+   shell: service ceilometer-agent-central restart
+
+ - name: Ensure that the ceilometer-agent-notification service is restarted
+   shell: service ceilometer-agent-notification restart
+
+ - name: Ensure that the ceilometer-api service is restarted
+   shell: service restart
+   shell: service ceilometer-api restart
+
+ - name: Ensure that the ceilometer-collector service is restarted
+   shell: service ceilometer-collector restart
+
+ - name: Ensure that the ceilometer-alarm-evaluator service is restarted
+   shell: service ceilometer-alarm-evaluator restart
+
+ - name: Ensure that the ceilometer-alarm-notifier service is restarted
+   shell: service ceilometer-alarm-notifier restart

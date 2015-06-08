@@ -1,0 +1,38 @@
+---
+
+- hosts: openstack-ctl-master-nodes
+
+  sudo: yes
+
+  vars:  
+    external_net_cidr: "172.16.8.0/24"
+    floating_ip_start: "172.16.8.100"
+    floating_ip_end: "172.16.8.200"
+    external_net_gw: "172.16.8.1"
+    tenant_net_cidr: "192.168.100.0/24"
+    tenant_net_gw: "192.168.100.1"
+  
+    env:
+      OS_PROJECT_DOMAIN_ID: "default"
+      OS_USER_DOMAIN_ID: "default"
+      OS_PROJECT_NAME: "admin"
+      OS_TENANT_NAME: "admin"
+      OS_USERNAME: "admin"
+      OS_PASSWORD: "{{ keystone_admin_pass }}"
+      OS_AUTH_URL: "http://{{ openstack_ctl_master }}:35357/v3"
+      OS_IMAGE_API_VERSION: "2"
+
+    demo:
+      OS_PROJECT_DOMAIN_ID: "default"
+      OS_USER_DOMAIN_ID: "default"
+      OS_PROJECT_NAME: "demo"
+      OS_TENANT_NAME: "demo"
+      OS_USERNAME: "demo"
+      OS_PASSWORD: "{{ keystone_demo_pass }}"
+      OS_AUTH_URL: "http://{{ openstack_ctl_master }}:5000/v3"
+      OS_IMAGE_API_VERSION: "2"
+
+  roles:
+
+    - neutron-initial-net
+

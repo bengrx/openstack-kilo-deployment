@@ -1,0 +1,10 @@
+---
+
+- hosts: openstack-ctl-master-nodes
+
+  sudo: yes
+
+  roles:
+
+    - horizon
+

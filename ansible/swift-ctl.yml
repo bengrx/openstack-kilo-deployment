@@ -1,0 +1,35 @@
+---
+
+- hosts: openstack-ctl-master-nodes
+
+  sudo: yes
+
+  vars:
+    env:
+
+      OS_PROJECT_DOMAIN_ID: "default"
+      OS_USER_DOMAIN_ID: "default"
+      OS_PROJECT_NAME: "demo"
+      OS_TENANT_NAME: "demo"
+      OS_USERNAME: "demo"
+      OS_PASSWORD: "{{ keystone_demo_pass }}"
+      OS_AUTH_URL: "http://{{ openstack_ctl_master }}:5000/v3"
+      OS_IMAGE_API_VERSION: "2"
+      OS_VOLUME_API_VERSION: "2"
+
+    admin:
+
+      OS_PROJECT_DOMAIN_ID: "default"
+      OS_USER_DOMAIN_ID: "default"
+      OS_PROJECT_NAME: "admin"
+      OS_TENANT_NAME: "admin"
+      OS_USERNAME: "admin"
+      OS_PASSWORD: "{{ keystone_admin_pass }}"
+      OS_AUTH_URL: "http://{{ openstack_ctl_master }}:5000/v3"
+      OS_IMAGE_API_VERSION: "2"
+      OS_VOLUME_API_VERSION: "2"
+
+  roles:
+
+    - swift-ctl
+

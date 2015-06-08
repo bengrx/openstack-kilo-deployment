@@ -1,0 +1,48 @@
+---
+
+ - name: Ensure that the heat-api package is installed
+   apt: pkg=heat-api state=installed
+
+ - name: Ensure that the heat-api-cfn package is installed
+   apt: pkg=heat-api-cfn state=installed
+
+ - name: Ensure that the heat-engine package is installed
+   apt: pkg=heat-engine state=installed
+
+ - name: Ensure that the python-heatclient package is installed
+   apt: pkg=python-heatclient state=installed
+
+ - name: Copy the templated heat.conf file
+   template: src=heat.conf dest=/etc/heat/heat.conf
+
+ - name: Create the heat domain in Identity service
+   shell: heat-keystone-setup-domain --stack-user-domain-name heat_user_domain --stack-domain-admin heat_domain_admin --stack-domain-admin-password {{ heat_domain_pass }};sleep 1
+   environment: env
+   delegate_to: "{{ openstack_ctl_master }}"
+
+ - name: Populate the Orchestration database
+   shell: su -s /bin/sh -c "heat-manage db_sync" heat; sleep 1
+
+ - name: Ensure that the heat-api service is restarted
+   shell: service heat-api restart
+
+ - name: Ensure that the heat-api-cfn service is restarted
+   shell: service heat-api-cfn restart
+
+ - name: Ensure that the heat-engine service is restarted
+   shell: service heat-engine restart
+
+ - name: Remove the sqlite database
+   shell: rm -f /var/lib/heat/heat.sqlite 2>/dev/null
+
+ - name: Copy the test-stack.yml file
+   copy: src=test-stack.yml dest=/root/test-stack.yml
+
+ - name: Get the network reference for demo-net
+   shell: nova net-list | grep demo-net | awk '{ print $2 }'
+   environment: env
+   register: net_id
+
+ - name: Attempt to build test-stack.yml
+   shell: heat stack-create -f /root/test-stack.yml -P "ImageID={{ cirros_image_name }};NetID={{ net_id.stdout }}" testStack; sleep 1
+   environment: env

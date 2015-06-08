@@ -1,0 +1,11 @@
+---
+
+ - name: Test to see if the initial demo tenant network exists
+   env: demo
+   shell: neutron net-list | grep "demo-net" | wc -l
+   register: demo_net_exists
+
+ - name: Create the initial demo tenant network
+   env: demo
+   shell: neutron net-create demo-net
+   when: demo_net_exists.stdout.find('1') == -1

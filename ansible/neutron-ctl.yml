@@ -1,0 +1,22 @@
+---
+
+- hosts: openstack-ctl-master-nodes
+
+  sudo: yes
+
+  vars:
+    env:
+
+      OS_PROJECT_DOMAIN_ID: "default"
+      OS_USER_DOMAIN_ID: "default"
+      OS_PROJECT_NAME: "admin"
+      OS_TENANT_NAME: "admin"
+      OS_USERNAME: "admin"
+      OS_PASSWORD: "{{ keystone_admin_pass }}"
+      OS_AUTH_URL: "http://{{ openstack_ctl_master }}:35357/v3"
+      OS_IMAGE_API_VERSION: "2"
+
+  roles:
+
+    - neutron-ctl
+

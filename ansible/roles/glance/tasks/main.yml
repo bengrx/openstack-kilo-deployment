@@ -1,0 +1,88 @@
+---
+
+ - name: Create the image path
+   shell: mkdir -p {{ image_path }} 2>/dev/null
+
+ - name: Determine whether there is at least 10GB in the image path
+   shell: df -h /var/lib/glance/images/ | awk '{print $4}' | grep "G" | sed 's/G//g'
+   register: space_gb
+
+ - name: Determine whether there is at least 10GB in the image path
+   debug: msg="Found {{ space_gb.stdout }}GB of free space in {{ image_path }}"
+   failed_when: "{{ space_gb.stdout }} < 10"
+
+ - name: Ensure package glance is installed
+   apt: pkg=glance state=installed
+
+ - name: Ensure package python-glanceclient is installed
+   apt: pkg=python-glanceclient state=installed
+
+ - name: Copy the templated glance-api.conf
+   template: src=glance-api.conf dest=/etc/glance/glance-api.conf
+
+ - name: Copy the templated glance-registry.conf
+   template: src=glance-registry.conf dest=/etc/glance/glance-registry.conf
+
+ - name: Populate the image service database
+   shell: su -s /bin/sh -c "glance-manage db_sync" glance
+
+ - name: Restart the glance-registry service
+   shell: service glance-registry restart
+
+ - name: Restart the glance-api service
+   shell: service glance-api restart
+
+ - name: Remove the sqlite database
+   shell: rm -f /var/lib/glance/glance.sqlite 2>/dev/null
+
+ - name: Make the temporary image directory
+   shell: mkdir -p /tmp/images/ 2>/dev/null
+
+ - name: Check the CirrOS image is available
+   shell: glance image-list | grep "cirros-" | wc -l 
+   environment: env
+   register: cirros_available
+
+ - name: Download the CirrOS image to temporary image directory
+   shell: wget -P /tmp/images {{ cirros_path }}
+   when: cirros_available.stdout.find('0') != -1
+
+ - name: Upload the CirrOS image to the glance service
+   shell: glance image-create --name "{{ cirros_image_name }}" --file /tmp/images/{{ cirros_image_name }}-disk.img --disk-format qcow2 --container-format bare --visibility public
+   environment: env
+   when: cirros_available.stdout.find('0') != -1
+
+ - name: Check the Ubuntu Trust Cloud image is available
+   shell: glance image-list | grep "trusty-" | wc -l
+   environment: env
+   register: trusty_available
+
+ - name: Download the Ubuntu Trusty Cloud image to temporary image directory
+   shell: wget -P /tmp/images {{ trusty_path }}
+   when: trusty_available.stdout.find('0') != -1
+
+ - name: Upload the Trusty image to the glance service
+   shell: glance image-create --name "{{ trusty_image_name }}" --file /tmp/images/{{ trusty_image_name }}-disk1.img --disk-format raw --container-format bare --visibility public
+   environment: env
+   when: trusty_available.stdout.find('0') != -1
+
+ - name: Check the CirrOS image is available
+   shell: glance image-list | grep "cirros-" | wc -l
+   environment: env
+   register: cirros_available2
+
+ - name: Check the CirrOS image is available
+   debug: msg="Check CirrOS image is availavble via image service.Found {{ cirros_available2.stdout }} Cirros images"
+   failed_when: cirros_available2.stdout.find('0') != -1
+
+ - name: Check the Ubuntu Trusty image is available
+   shell: glance image-list | grep "trusty-" | wc -l
+   environment: env
+   register: trusty_available2
+
+ - name: Check the Trusty image is available
+   debug: msg="Check Trusty image is availavble via image service. Found {{ trusty_available2.stdout }} Trusty images"
+   failed_when: trusty_available2.stdout.find('0') != -1
+
+
+

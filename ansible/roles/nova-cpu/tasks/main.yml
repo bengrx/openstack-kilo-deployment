@@ -1,0 +1,48 @@
+---
+
+ - name: Ensure that the nova-compute package is installed
+   apt: pkg=nova-compute state=installed
+
+ - name: Ensure that the sysfsutils package is installed
+   apt: pkg=sysfsutils state=installed
+
+ - name: Get the hostname
+   shell: hostname
+   register: ansible_hostname
+
+ - name: Copy the templated nova.conf file
+   template: src=nova.conf dest=/etc/nova/nova.conf
+
+ - name: Determine the CPU type
+   shell: cat /proc/cpuinfo | grep "vmx\|svm" | wc -l
+   register: kvm_support
+
+ - name: Set the virtualisation type to kvm
+   shell: sed -i "s/virt_type = qemu/virt_type = kvm/" /etc/nova/nova.conf
+   when: kvm_support.stdout.find('0') == -1
+
+ - name: Set the virtualisation type to qemu
+   shell: sed -i "s/virt_type = kvm/virt_type = qemu/" /etc/nova/nova.conf
+   when: kvm_support.stdout.find('0') != -1
+
+ - name: Install the nova-compute-qemu package
+   apt: pkg=nova-compute-qemu state=installed
+   when: kvm_support.stdout.find('0') != -1
+
+ - name: Ensure the nova-compute service is restarted
+   shell: service nova-compute restart
+
+ - name: Remove the sqlite database
+   shell: rm -f /var/lib/nova/nova.sqlite 2>/dev/null
+
+ - name: Ensure the package ceilometer-agent-compute is installed
+   apt: pkg=ceilometer-agent-compute state=installed
+
+ - name: Copy the templated ceilometer.conf file
+   template: src=ceilometer.conf dest=/etc/ceilometer/ceilometer.conf
+
+ - name: Ensure that the ceilometer-agent-compute service is restarted
+   shell: service ceilometer-agent-compute restart
+
+ - name: Ensure that the nova-compute service is restarted
+   shell: service nova-compute restart

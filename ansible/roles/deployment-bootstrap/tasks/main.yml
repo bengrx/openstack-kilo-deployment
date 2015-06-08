@@ -18,6 +18,9 @@
  - name: Ensure that python-pip is installed
    apt: pkg=python-pip state=installed
 
+ - name: Ensure that nmap is installed
+   apt: pkg=nmap state=installed
+
  - name: Ensure that ansible is installed
    shell: pip install ansible
 

@@ -1,0 +1,487 @@
+---
+
+ # Perform initial keystone service, endpoint, projects, users, roles and membership
+
+ - name: Check for keystone service
+   environment: env
+   shell: openstack service list 2>/dev/null | grep "keystone" | wc -l
+   register: keystone_service_exists
+
+ - name: Create the keystone service
+   environment: env
+   shell: openstack service create --name keystone --description "OpenStack Identity" identity
+   when: keystone_service_exists.stdout.find('0') != -1
+
+ - name: Check for keystone service API endpoint
+   environment: env
+   shell: openstack endpoint list 2>/dev/null | grep "keystone" | wc -l
+   register: keystone_endpoint_exists
+   
+ - name: Create the keystone endpoint
+   environment: env
+   shell: openstack endpoint create --publicurl http://{{ openstack_ctl_master }}:5000/v2.0 --internalurl http://{{ openstack_ctl_master }}:5000/v2.0 --adminurl http://{{ openstack_ctl_master }}:35357/v2.0 --region {{ openstack_region }} identity
+   when: keystone_endpoint_exists.stdout.find('0') != -1
+
+ - name: Check for the admin project
+   environment: env
+   shell: openstack project list 2>/dev/null | grep "admin" | wc -l
+   register: admin_project_exists
+
+ - name: Create the admin project
+   environment: env
+   shell: openstack project create --description "Admin Project" admin
+   when: admin_project_exists.stdout.find('0') != -1
+   
+ - name: Check for the admin user
+   environment: env
+   shell: openstack user list 2>/dev/null | grep "admin" | wc -l
+   register: admin_user_exists
+
+ - name: Create the admin user
+   environment: env
+   shell: openstack user create --password {{ keystone_admin_pass }} admin
+   when: admin_user_exists.stdout.find('0') != -1  
+
+ - name: Check for the admin role
+   environment: env
+   shell: openstack role list 2>/dev/null | grep "admin" | wc -l
+   register: admin_role_exists
+
+ - name: Create the admin role
+   shell: openstack role create admin
+   environment: env
+   when: admin_role_exists.stdout.find('0') != -1
+
+ - name: Add the admin role to the admin user
+   shell: openstack role add --project admin --user admin admin 2>/dev/null; sleep 1
+   environment: env
+
+ - name: Check for the service project
+   environment: env
+   shell: openstack project list 2>/dev/null | grep "service" | wc -l
+   register: service_project_exists
+
+ - name: Create the service project
+   environment: env
+   shell: openstack project create --description "Service Project" service
+   when: service_project_exists.stdout.find('0') != -1
+
+ - name: Check for the demo project
+   environment: env
+   shell: openstack project list 2>/dev/null | grep "demo" | wc -l
+   register: demo_project_exists
+
+ - name: Create the demo project
+   environment: env
+   shell: openstack project create --description "Demo Project" demo
+   when: demo_project_exists.stdout.find('0') != -1
+
+ - name: Check for the demo user
+   environment: env
+   shell: openstack user list 2>/dev/null | grep "demo" | wc -l
+   register: demo_user_exists
+
+ - name: Create the demo user
+   environment: env
+   shell: openstack user create --password {{ keystone_demo_pass }} demo
+   when: demo_user_exists.stdout.find('0') != -1  
+
+ - name: Check for the member role
+   environment: env
+   shell: openstack role list 2>/dev/null | grep "_member_" | wc -l
+   register: member_role_exists
+
+ - name: Create the member role
+   shell: openstack role create _member_
+   environment: env
+   when: member_role_exists.stdout.find('0') != -1
+
+ - name: Add the member role to the demo user
+   shell: openstack role add --project demo --user demo _member_ 2>/dev/null; sleep 1
+   environment: env
+
+ - name: Copy the templated admin-openrc.sh file 
+   template: src=admin-openrc.sh dest=/root/admin-openrc.sh
+
+ - name: Copy the templated demo-openrc.sh file 
+   template: src=demo-openrc.sh dest=/root/demo-openrc.sh
+
+ # Perform keystone setup for additional services, endpoints, projects and users (GLANCE)
+
+ - name: Check for the glance user
+   environment: env
+   shell: openstack user list 2>/dev/null | grep "glance" | wc -l
+   register: glance_user_exists
+
+ - name: Create the glance user
+   environment: env
+   shell: openstack user create --password {{ glance_pass }} glance
+   when: glance_user_exists.stdout.find('0') != -1  
+
+ - name: Add the admin role to the glance user
+   shell: openstack role add --project service --user glance admin 2>/dev/null; sleep 1
+   environment: env
+
+ - name: Check for glance service
+   environment: env
+   shell: openstack service list 2>/dev/null | grep "glance" | wc -l
+   register: glance_service_exists
+
+ - name: Create the glance service
+   environment: env
+   shell: openstack service create --type image --description "OpenStack Image Service" glance
+   when: glance_service_exists.stdout.find('0') != -1
+
+ - name: Check for glance service API endpoint
+   environment: env
+   shell: openstack endpoint list 2>/dev/null | grep "glance" | wc -l
+   register: glance_endpoint_exists
+   
+ - name: Create the glance endpoint
+   environment: env
+   shell: openstack endpoint create --publicurl http://{{ openstack_ctl_master }}:9292 --internalurl http://{{ openstack_ctl_master }}:9292 --adminurl http://{{ openstack_ctl_master }}:9292 --region {{ openstack_region }} image
+   when: glance_endpoint_exists.stdout.find('0') != -1
+
+ # Perform keystone setup for additional services, endpoints, projects and users (NOVA)
+
+ - name: Check for the nova user
+   environment: env
+   shell: openstack user list 2>/dev/null | grep "nova" | wc -l
+   register: nova_user_exists
+
+ - name: Create the nova user
+   environment: env
+   shell: openstack user create --password {{ nova_pass }} nova
+   when: nova_user_exists.stdout.find('0') != -1  
+
+ - name: Add the admin role to the nova user
+   shell: openstack role add --project service --user nova admin 2>/dev/null; sleep 1
+   environment: env
+
+ - name: Check for nova service
+   environment: env
+   shell: openstack service list 2>/dev/null | grep "nova" | wc -l
+   register: nova_service_exists
+
+ - name: Create the nova service
+   environment: env
+   shell: openstack service create --type compute --description "OpenStack Compute Service" nova
+   when: nova_service_exists.stdout.find('0') != -1
+
+ - name: Check for nova service API endpoint
+   environment: env
+   shell: openstack endpoint list 2>/dev/null | grep "nova" | wc -l
+   register: nova_endpoint_exists
+   
+ - name: Create the nova endpoint
+   environment: env
+   shell: openstack endpoint create --publicurl http://{{ openstack_ctl_master }}:8774/v2/%\(tenant_id\)s --internalurl http://{{ openstack_ctl_master }}:8774/v2/%\(tenant_id\)s --adminurl http://{{ openstack_ctl_master }}:8774/v2/%\(tenant_id\)s --region {{ openstack_region }} compute
+   when: nova_endpoint_exists.stdout.find('0') != -1
+
+ # Perform keystone setup for additional services, endpoints, projects and users (NEUTRON)
+
+ - name: Check for the neutron user
+   environment: env
+   shell: openstack user list 2>/dev/null | grep "neutron" | wc -l
+   register: neutron_user_exists
+
+ - name: Create the neutron user
+   environment: env
+   shell: openstack user create --password {{ neutron_pass }} neutron
+   when: neutron_user_exists.stdout.find('0') != -1  
+
+ - name: Add the admin role to the neutron user
+   shell: openstack role add --project service --user neutron admin 2>/dev/null; sleep 1
+   environment: env
+
+ - name: Check for neutron service
+   environment: env
+   shell: openstack service list 2>/dev/null | grep "neutron" | wc -l
+   register: neutron_service_exists
+
+ - name: Create the neutron service
+   environment: env
+   shell: openstack service create --type network --description "OpenStack Networking Service" neutron
+   when: neutron_service_exists.stdout.find('0') != -1
+
+ - name: Check for neutron service API endpoint
+   environment: env
+   shell: openstack endpoint list 2>/dev/null | grep "neutron" | wc -l
+   register: neutron_endpoint_exists
+   
+ - name: Create the neutron endpoint
+   environment: env
+   shell: openstack endpoint create --publicurl http://{{ openstack_ctl_master }}:9696 --internalurl http://{{ openstack_ctl_master }}:9696 --adminurl http://{{ openstack_ctl_master }}:9696 --region {{ openstack_region }} network
+   when: neutron_endpoint_exists.stdout.find('0') != -1
+
+ # Perform keystone setup for additional services, endpoints, projects and users (CINDER)
+
+ - name: Check for the cinder user
+   environment: env
+   shell: openstack user list 2>/dev/null | grep "cinder" | wc -l
+   register: cinder_user_exists
+
+ - name: Create the cinder user
+   environment: env
+   shell: openstack user create --password {{ cinder_pass }} cinder
+   when: cinder_user_exists.stdout.find('0') != -1  
+
+ - name: Add the admin role to the cinder user
+   shell: openstack role add --project service --user cinder admin 2>/dev/null; sleep 1
+   environment: env
+
+ - name: Check for cinder service
+   environment: env
+   shell: openstack service list 2>/dev/null | grep "cinder " | wc -l
+   register: cinder_service_exists
+
+ - name: Create the cinder service
+   environment: env
+   shell: openstack service create --type volume --description "OpenStack Block Storage Service" cinder
+   when: cinder_service_exists.stdout.find('0') != -1
+
+ - name: Check for cinderv2 service
+   environment: env
+   shell: openstack service list 2>/dev/null | grep "cinderv2" | wc -l
+   register: cinderv2_service_exists
+
+ - name: Create the cinderv2 service
+   environment: env
+   shell: openstack service create --type volumev2 --description "OpenStack Block Storage Service" cinderv2
+   when: cinderv2_service_exists.stdout.find('0') != -1
+
+ - name: Check for cinder service API endpoint
+   environment: env
+   shell: openstack endpoint list 2>/dev/null | grep "volume " | wc -l
+   register: cinder_endpoint_exists
+   
+ - name: Create the cinder endpoint
+   environment: env
+   shell: openstack endpoint create  --publicurl http://{{ openstack_ctl_master }}:8776/v2/%\(tenant_id\)s --internalurl http://{{ openstack_ctl_master }}:8776/v2/%\(tenant_id\)s --adminurl http://{{ openstack_ctl_master }}:8776/v2/%\(tenant_id\)s --region {{ openstack_region }} volume
+   when: cinder_endpoint_exists.stdout.find('0') != -1
+
+ - name: Check for cinderv2 service API endpoint
+   environment: env
+   shell: openstack endpoint list 2>/dev/null | grep "volumev2" | wc -l
+   register: cinder_v2endpoint_exists
+   
+ - name: Create the cinder endpoint
+   environment: env
+   shell: openstack endpoint create --publicurl http://{{ openstack_ctl_master }}:8776/v2/%\(tenant_id\)s --internalurl http://{{ openstack_ctl_master }}:8776/v2/%\(tenant_id\)s --adminurl http://{{ openstack_ctl_master }}:8776/v2/%\(tenant_id\)s --region {{ openstack_region }} volumev2
+   when: cinder_endpoint_exists.stdout.find('0') != -1
+
+ # Perform keystone setup for additional services, endpoints, projects and users (SWIFT)
+
+ - name: Check for the swift user
+   environment: env
+   shell: openstack user list 2>/dev/null | grep "swift" | wc -l
+   register: swift_user_exists
+
+ - name: Create the swift user
+   environment: env
+   shell: openstack user create --password {{ swift_pass }} swift
+   when: swift_user_exists.stdout.find('0') != -1  
+
+ - name: Add the admin role to the swift user
+   shell: openstack role add --project service --user swift admin 2>/dev/null; sleep 1
+   environment: env
+
+ - name: Check for swift service
+   environment: env
+   shell: openstack service list 2>/dev/null | grep "swift " | wc -l
+   register: swift_service_exists
+
+ - name: Create the swift service
+   environment: env
+   shell: openstack service create --type object-store --description "OpenStack Object Storage Service" swift
+   when: swift_service_exists.stdout.find('0') != -1
+
+ - name: Check for swift service API endpoint
+   environment: env
+   shell: openstack endpoint list 2>/dev/null | grep "object-store" | wc -l
+   register: swift_endpoint_exists
+   
+ - name: Create the swift endpoint
+   environment: env
+   shell: openstack endpoint create  --publicurl 'http://{{ openstack_ctl_master }}:8080/v1/AUTH_%(tenant_id)s' --internalurl 'http://{{ openstack_ctl_master }}:8080/v1/AUTH_%(tenant_id)s' --adminurl http://{{ openstack_ctl_master }}:8080 --region {{ openstack_region }} object-store
+   when: swift_endpoint_exists.stdout.find('0') != -1
+
+ # Perform keystone setup for additional services, endpoints, projects and users (HEAT)
+
+ - name: Check for the heat user
+   environment: env
+   shell: openstack user list 2>/dev/null | grep "heat" | wc -l
+   register: heat_user_exists
+
+ - name: Create the heat user
+   environment: env
+   shell: openstack user create --password {{ heat_pass }} heat
+   when: heat_user_exists.stdout.find('0') != -1  
+
+ - name: Check for the heat_stack_owner role
+   environment: env
+   shell: openstack role list 2>/dev/null | grep "heat_stack_owner" | wc -l
+   register: heat_owner_role_exists
+
+ - name: Create the heat_stack_owner role
+   environment: env
+   shell: openstack role create heat_stack_owner
+   when: heat_owner_role_exists.stdout.find('0') != -1  
+
+ - name: Add the admin role to the heat user
+   shell: openstack role add --project service --user heat admin 2>/dev/null; sleep 1
+   environment: env
+
+ - name: Add the heat_stack_owner role to the demo tenant and user
+   shell: openstack role add --project demo --user demo heat_stack_owner 2>/dev/null; sleep 1
+   environment: env
+
+ - name: Create the heat_stack_user_role
+   shell: openstack role create heat_stack_user; sleep 1
+   environment: env
+
+ - name: Check for heat service
+   environment: env
+   shell: openstack service list 2>/dev/null | grep "heat" | wc -l
+   register: heat_service_exists
+
+ - name: Create the heat service
+   environment: env
+   shell: openstack service create --type orchestration --description "OpenStack Orchestration Service" heat
+   when: heat_service_exists.stdout.find('0') != -1
+
+ - name: Check for heat-cfn service
+   environment: env
+   shell: openstack service list 2>/dev/null | grep "heat-cfn" | wc -l
+   register: heat_cfn_service_exists
+
+ - name: Create the heat-cfn service
+   environment: env
+   shell: openstack service create --type cloudformation --description "OpenStack Orchestration Service" heat-cfn
+   when: heat_cfn_service_exists.stdout.find('0') != -1
+
+
+ - name: Check for heat service API endpoint
+   environment: env
+   shell: openstack endpoint list 2>/dev/null | grep "orchestration" | wc -l
+   register: heat_endpoint_exists
+   
+ - name: Create the heat endpoint
+   environment: env
+   shell: openstack endpoint create  --publicurl http://{{ openstack_ctl_master }}:8004/v1/%\(tenant_id\)s --internalurl http://{{ openstack_ctl_master }}:8004/v1/%\(tenant_id\)s --adminurl http://{{ openstack_ctl_master }}:8004/v1/%\(tenant_id\)s --region {{ openstack_region }} orchestration
+   when: heat_endpoint_exists.stdout.find('0') != -1
+
+ - name: Check for heat cloudformation service API endpoint
+   environment: env
+   shell: openstack endpoint list 2>/dev/null | grep "cloudformation" | wc -l
+   register: cloudformation_endpoint_exists
+   
+ - name: Create the heat cloudformation endpoint
+   environment: env
+   shell: openstack endpoint create  --publicurl http://{{ openstack_ctl_master }}:8000/v1 --internalurl http://{{ openstack_ctl_master }}:8004/v1 --adminurl http://{{ openstack_ctl_master }}:8004/v1 --region {{ openstack_region }} cloudformation
+   when: cloudformation_endpoint_exists.stdout.find('0') != -1
+
+ # Perform keystone setup for additional services, endpoints, projects and users (CEILOMETER)
+
+ - name: Check for the ceilometer user
+   environment: env
+   shell: openstack user list 2>/dev/null | grep "ceilometer" | wc -l
+   register: ceilometer_user_exists
+
+ - name: Create the ceilometer user
+   environment: env
+   shell: openstack user create --password {{ ceilometer_pass }} ceilometer
+   when: ceilometer_user_exists.stdout.find('0') != -1  
+
+ - name: Add the admin role to the ceilometer user
+   shell: openstack role add --project service --user ceilometer admin 2>/dev/null; sleep 1
+   environment: env
+
+ - name: Check for ceilometer service
+   environment: env
+   shell: openstack service list 2>/dev/null | grep "ceilometer" | wc -l
+   register: ceilometer_service_exists
+
+ - name: Create the ceilometer service
+   environment: env
+   shell: openstack service create --type metering --description "OpenStack Telemetry Service" metering
+   when: ceilometer_service_exists.stdout.find('0') != -1
+
+ - name: Check for ceilometer service API endpoint
+   environment: env
+   shell: openstack endpoint list 2>/dev/null | grep "metering" | wc -l
+   register: ceilometer_endpoint_exists
+   
+ - name: Create the ceilometer endpoint
+   environment: env
+   shell: openstack endpoint create --publicurl http://{{ openstack_ctl_master }}:8777 --internalurl http://{{ openstack_ctl_master }}:8777 --adminurl http://{{ openstack_ctl_master }}:8777 --region {{ openstack_region }} metering
+   when: ceilometer_endpoint_exists.stdout.find('0') != -1
+
+ # Perform some configuration checks for the base keystone service
+
+ - name: Test request for authentication token as admin
+   environment: env
+   shell: openstack --os-auth-url http://{{ openstack_ctl_master }}:35357 --os-project-name admin --os-username admin --os-auth-type password --os-password {{ keystone_admin_pass }} token issue | grep "user_id" | wc -l | sed -e 's/1/OK/g' -e 's/0/FAILED/g'
+   register: admin_token_success
+
+ - name: Test request for authentication token as admin
+   debug: msg="Authentication token request as admin {{ admin_token_success.stdout }}"
+   failed_when: admin_token_success.stdout.find('OK') == -1
+
+ - name: Test request for authentication token as admin using V3 API calls
+   environment: env
+   shell: openstack --os-auth-url http://{{ openstack_ctl_master }}:35357 --os-project-domain-id default --os-user-domain-id default --os-project-name admin --os-username admin --os-auth-type password --os-password {{ keystone_admin_pass }} token issue |  grep "user_id" | wc -l | sed -e 's/1/OK/g' -e 's/0/FAILED/g'
+   register: v3_token_success
+
+ - name: Test request for authentication token as admin using V3 API calls
+   debug: msg="Authentication token request as admin using API V3 calls {{ admin_token_success.stdout }}"
+   failed_when: v3_token_success.stdout.find('OK') == -1
+
+ - name: Test that admin user can execute admin only CLI commands
+   environment: env
+   shell: openstack --os-auth-url http://{{ openstack_ctl_master }}:35357 --os-project-name admin --os-username admin --os-auth-type password --os-password {{ keystone_admin_pass }} project list 2>/dev/null| grep "service\|demo\|admin" | wc -l | sed -e 's/3/OK/g' -e s'/[0-9]/FAILED/g'
+   register: cli_status
+
+ - name: Test that admin user can execute admin only CLI commands
+   debug: msg="Test for deployment projects and CLI command access for admin {{ cli_status.stdout }}"
+   failed_when: cli_status.stdout.find('OK') == -1
+
+ - name: Test that users have been created for the identity service
+   environment: env
+   shell: openstack --os-auth-url http://{{ openstack_ctl_master }}:35357 --os-project-name admin --os-username admin --os-auth-type password --os-password {{ keystone_admin_pass }} user list 2>/dev/null| grep "demo\|admin" | wc -l | sed -e 's/2/OK/g' -e s'/[0-9]/FAILED/g'
+   register: user_status
+
+ - name: Test that users have been created for the identity service
+   debug: msg="Test for identity service users {{ user_status.stdout }}"
+   failed_when: user_status.stdout.find('OK') == -1
+
+
+ - name: Test that roles have been assigned for the identity service
+   environment: env
+   shell: openstack --os-auth-url http://{{ openstack_ctl_master }}:35357 --os-project-name admin --os-username admin --os-auth-type password --os-password {{ keystone_admin_pass }} role list 2>/dev/null| grep "_member_\|admin" | wc -l | sed -e 's/2/OK/g' -e s'/[0-9]/FAILED/g'
+   register: role_status
+
+ - name: Test that roles have been assigned for the identity service
+   debug: msg="Test for deployment roles {{ user_status.stdout }}"
+   failed_when: role_status.stdout.find('OK') == -1
+
+
+ - name: Test request for authentication token as demo 
+   environment: env
+   shell: openstack --os-auth-url http://{{ openstack_ctl_master }}:5000 --os-project-domain-id default --os-user-domain-id default --os-project-name demo --os-username demo --os-auth-type password --os-password {{ keystone_demo_pass }} token issue | grep "user_id" | wc -l | sed -e 's/1/OK/g' -e 's/0/FAILED/g'
+   register: demo_token_success
+
+ - name: Test request for authentication token as demo 
+   debug: msg="Authentication token request as demo {{ demo_token_success.stdout }}"
+   failed_when: demo_token_success.stdout.find('OK') == -1
+
+
+ - name: Test that demo user can't execute admin only CLI commands
+   environment: env
+   shell: openstack --os-auth-url http://{{ openstack_ctl_master }}:5000 --os-project-domain-id default --os-user-domain-id default --os-project-name demo --os-username demo --os-auth-type password --os-password {{ keystone_demo_pass }} user list | grep "admin" | wc -l | sed -e 's/0/OK/g' -e s'/[1-9]/FAILED/g'; sleep 1
+   register: demo_cli_status
+
+ - name: Test that demo user can't execute admin only CLI commands
+   debug: msg="Test for CLI command access for demo {{ demo_cli_status.stdout }}"
+   failed_when: "'admin' in demo_cli_status.stdout"
+

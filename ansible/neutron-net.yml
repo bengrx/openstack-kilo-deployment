@@ -1,0 +1,10 @@
+---
+
+- hosts: openstack-net-nodes
+
+  sudo: yes
+
+  roles:
+
+    - neutron-net
+

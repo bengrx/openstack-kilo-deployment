@@ -1,0 +1,50 @@
+---
+
+ - name: Ensure that the cinder-api package is installed
+   apt: pkg=cinder-api state=installed
+
+ - name: Ensure that the cinder-scheduler package is installed
+   apt: pkg=cinder-scheduler state=installed
+
+ - name: Ensure that the python-cinderclient package is installed
+   apt: pkg=python-cinderclient state=installed
+
+ - name: Copy the templated cinder.conf file
+   template: src=cinder.conf dest=/etc/cinder/cinder.conf
+
+ - name: Populate the block storage database
+   shell: su -s /bin/sh -c "cinder-manage db sync" cinder; sleep 1
+
+ - name: Ensure that the cinder-scheduler service is restarted
+   shell: service cinder-scheduler restart
+
+ - name: Ensure that the cinder-api service is restarted
+   shell: service cinder-api restart
+
+ - name: Remove the sqlite database
+   shell: rm -f /var/lib/cinder/cinder.sqlite
+
+ - name: Check cinder services components are running
+   environment: admin
+   shell: sleep 15;cinder service-list | grep "up" | grep "enabled" | wc -l
+   register: active_cinder_service_count
+
+ - name: Check cinder services components are running
+   debug: msg="Found {{ active_cinder_service_count.stdout }} active cinder components"
+   failed_when: active_cinder_service_count.stdout.find('0') != -1
+
+ - name: Check that the demo volume is available
+   environment: env
+   shell: cinder list | grep "demo-volume1" | wc -l
+   register: demo_volume_exists
+
+ - name: Create the demo volume
+   shell: cinder create --name demo-volume1 1;sleep 1
+   environment: env
+   when: demo_volume_exists.stdout.find('0') != -1
+
+ - name: Check that the demo volume is available
+   environment: env
+   shell: cinder list | grep "demo-volume1" | wc -l
+   register: demo_volume_exists
+   when: demo_volume_exists.stdout.find('0') != -1

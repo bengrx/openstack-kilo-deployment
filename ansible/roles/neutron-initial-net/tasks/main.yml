@@ -1,0 +1,68 @@
+---
+
+ - name: Test to see if the initial external network exists
+   environment: env
+   shell: neutron net-list | grep "ext-net" | wc -l
+   register: ext_net_exists
+   
+ - name: Create the initial external network
+   environment: env
+   shell: neutron net-create ext-net --router:external --provider:physical_network external --provider:network_type flat
+   when: ext_net_exists.stdout.find('1') == -1 
+
+ - name: Test to see if the initial external subnet exists
+   environment: env
+   shell: neutron subnet-list | grep "ext-subnet" | wc -l
+   register: ext_subnet_exists
+
+ - name: Create the initial external subnet
+   environment: env
+   shell: neutron subnet-create ext-net {{ external_net_cidr }} --name ext-subnet --allocation-pool start={{ floating_ip_start }},end={{ floating_ip_end }} --disable-dhcp --gateway {{ external_net_gw }}
+   when: ext_subnet_exists.stdout.find('1') == -1
+
+ - name: Test to see if the initial demo tenant network exists
+   environment: demo
+   shell: neutron net-list | grep "demo-net" | wc -l
+   register: demo_net_exists
+
+ - name: Create the initial demo tenant network
+   environment: demo
+   shell: neutron net-create demo-net; sleep 1
+   when: demo_net_exists.stdout.find('1') == -1
+
+ - name: Test to see if the initial demo tenant subnet exists
+   environment: demo
+   shell: neutron subnet-list | grep "demo-subnet" | wc -l
+   register: demo_subnet_exists
+
+ - name: Create the initial demo tenant subnet
+   environment: demo
+   shell: neutron subnet-create demo-net {{ tenant_net_cidr }} --name demo-subnet --gateway {{ tenant_net_gw }};sleep 1
+   when: demo_subnet_exists.stdout.find('1') == -1
+
+ - name: Test to see if the demo router exists
+   environment: demo
+   shell: neutron router-list | grep "demo-router" | wc -l
+   register: demo_router_exists
+
+ - name: Create the demo router
+   environment: demo
+   shell: neutron router-create demo-router; sleep 1
+   when: demo_router_exists.stdout.find('1') == -1
+
+ - name: Test to see if the demo router has been attached to demo subnet
+   environment: demo
+   shell: neutron router-port-list demo-router | grep -E "([a-f1-9]{2}:){5}[a-f0-9]{2}" | wc -l
+   register: demo_router_attached
+
+ - name: Attach the router to demo tenant subnet
+   environment: demo
+   shell: neutron router-interface-add demo-router demo-subnet; sleep 1
+   when: demo_router_attached.stdout.find('1') == -1
+
+ - name: Add the gateway to the demo router
+   environment: demo
+   shell: neutron router-gateway-set demo-router ext-net; sleep 1
+
+
+

@@ -1,0 +1,44 @@
+---
+
+ - name: Install the python-pip package
+   apt: pkg=python-pip state=installed
+
+ - name: Install the python-virtualenv package
+   apt: pkg=python-virtualenv state=installed
+
+ - name: Install the build-essential package
+   apt: pkg=build-essential state=installed
+
+# - name: Install the build-dep package
+#   apt: pkg=build-dep state=installed
+
+ - name: Install the python-lxml package
+   shell: apt-get build-dep python-lxml -y
+
+ - name: Add the public key for Github.com
+   shell: ssh-keyscan github.com
+
+# - name: Clone the designate git repo
+#   git: repo=https://github.com/openstack/designate.git dest=/var/lib/designate
+
+ - name: Deploy designate inside a container
+   shell: cd /var/lib/designate; virtualenv --no-site-packages .venv
+
+ - name: Activate the virtual environment container
+   shell: . /var/lib/designate/.venv/bin/activate
+
+ - name: Install python setuptools for distribute package
+   shell: pip install setuptools
+
+ - name: Install designate and it's dependencies
+   shell: cd /var/lib/designate; pip install -r requirements.txt -r test-requirements.txt
+
+ - name: Install using the python setup script
+   shell: cd /var/lib/designate; python setup.py develop
+
+# - name: 
+#   shell: cd /etc/designate;
+
+# - name:
+#   shell: cd /etc/designate;
+

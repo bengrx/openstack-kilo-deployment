@@ -1,0 +1,59 @@
+---
+
+ - name: Get the rabbitmq upstrem repo
+   shell: curl -O https://www.rabbitmq.com/rabbitmq-signing-key-public.asc
+
+ - name: Install the rabbitmq upstrem key
+   shell: apt-key add rabbitmq-signing-key-public.asc
+
+ - name: Update the apt cache
+   apt: update_cache=yes
+
+ - name: Set the controllers NTP configuration
+   shell: echo "server {{ default_ntp_server }} iburst \nrestrict -4 default kod notrap nomodify\nrestrict -6 default kod notrap nomodify"> /etc/ntp.conf
+
+ - name: Ensure that the rabbitmq-server package is installed
+   apt: pkg=rabbitmq-server state=installed
+
+ - name: Ensure that the mariadb-server package is installed
+   apt: pkg=mariadb-server state=installed
+
+ - name: Ensure that the python-mysqldb package is installed
+   apt: pkg=python-mysqldb state=installed
+
+ - name: Copy the templated my.cnf file
+   template: src=my.cnf dest=/etc/mysql/my.cnf
+
+ - name: Restart the mysql service
+   shell: service mysql restart
+
+ - name: Execute the mysql_secure_installation_silent script
+   script: mysql_secure_installation_silent
+
+ - name: Add the openstack user to rabbit
+   shell: rabbitmqctl add_user openstack {{ rabbit_pass }}; sleep 1
+
+ - name: Grant permissions to openstack rabbit user
+   shell: rabbitmqctl set_permissions openstack ".*" ".*" ".*"
+
+ - name: Execute openstack-db-config.sh for user keystone
+   script: openstack-db-config.sh keystone {{ keystone_dbpass }}
+
+ - name: Execute openstack-db-config.sh for user glance
+   script: openstack-db-config.sh glance {{ glance_dbpass }}
+
+ - name: Execute openstack-db-config.sh for user nova
+   script: openstack-db-config.sh nova {{ nova_dbpass }}
+
+ - name: Execute openstack-db-config.sh for user neutron
+   script: openstack-db-config.sh neutron {{ neutron_dbpass }}
+
+ - name: Execute openstack-db-config.sh for user cinder
+   script: openstack-db-config.sh cinder {{ cinder_dbpass }}
+
+ - name: Execute openstack-db-config.sh for user heat
+   script: openstack-db-config.sh heat {{ heat_dbpass }}
+
+ - name: Prevent keystone from starting while apache is being configured
+   shell: echo "manual" > /etc/init/keystone.override
+

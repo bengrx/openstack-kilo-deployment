@@ -1,0 +1,49 @@
+---
+
+ - name: Ensure that the lvm2 package is installed
+   apt: pkg=lvm2 state=installed
+
+ - name: Ensure that the cinder-volume package is installed
+   apt: pkg=cinder-volume state=installed
+
+ - name: Ensure that the python-mysqldb package is installed
+   apt: pkg=python-mysqldb state=installed
+
+ - name: Determine if the target cinder device is provisioned
+   shell: ls /dev/{{ cinder_storage_device }}1 | wc -l
+   register: device_count
+
+ - name: Provision the cinder device
+   shell: echo -e "o\nn\np\n1\n\n\nw" | fdisk /dev/{{ cinder_storage_device }}
+   when: device_count.stdout.find('1') == -1
+
+ - name: Determine if the target cinder lv is provisioned
+   shell: pvs | grep "/dev/{{ cinder_storage_device }}1" | wc -l
+   register: device_count
+
+ - name: Create the physical volume
+   shell: pvcreate /dev/{{ cinder_storage_device }}1
+   when: device_count.stdout.find('1') == -1
+
+ - name: Determine if the target cinder vg is provisioned
+   shell: vgs | grep cinder-volumes | wc -l
+   register: device_count
+
+ - name: Create the volume group
+   shell: vgcreate cinder-volumes "/dev/{{ cinder_storage_device }}1"
+   when: device_count.stdout.find('1') == -1
+
+ - name: Copy the templated lvm.conf file
+   template: src=lvm.conf dest=/etc/lvm/lvm.conf
+
+ - name: Copy the templated cinder.conf file
+   template: src=cinder.conf dest=/etc/cinder/cinder.conf
+
+ - name: Ensure that the tgt service is restarted
+   shell: service tgt restart
+
+ - name: Ensure that the cinder-volume service is restarted
+   shell: service cinder-volume restart
+
+ - name: Remove the sqlite database
+   shell: rm -f /var/lib/cinder/cinder.sqlite 2>/dev/null

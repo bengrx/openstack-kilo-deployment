@@ -1,0 +1,75 @@
+---
+
+ - name: Ensure that the nova-api package is installed
+   apt: pkg=nova-api state=installed
+
+ - name: Ensure that the nova-cert package is installed
+   apt: pkg=nova-cert state=installed
+
+ - name: Ensure that the nova-conductor package is installed
+   apt: pkg=nova-conductor state=installed
+
+ - name: Ensure that the nova-conductor package is installed
+   apt: pkg=nova-conductor state=installed
+
+ - name: Ensure that the nova-consoleauth package is installed
+   apt: pkg=nova-consoleauth state=installed
+
+ - name: Ensure that the nova-novncproxy package is installed
+   apt: pkg=nova-novncproxy state=installed
+
+ - name: Ensure that the nova-scheduler package is installed
+   apt: pkg=nova-scheduler state=installed
+
+ - name: Ensure that the python-novaclient package is installed
+   apt: pkg=python-novaclient state=installed
+
+ - name: Get the hostname for VNC listen address
+   shell: hostname
+   register: ansible_hostname
+
+ - name: Copy the templated nova.conf file
+   template: src=nova.conf dest=/etc/nova/nova.conf
+
+ - name: Populate the compute database
+   shell: su -s /bin/sh -c "nova-manage db sync" nova
+
+ - name: Ensure the nova-api service is restarted
+   shell: service nova-api restart
+
+ - name: Ensure the nova-cert service is restarted
+   shell: service nova-cert restart
+
+ - name: Ensure the nova-consoleauth service is restarted
+   shell: service nova-consoleauth restart
+
+ - name: Ensure the nova-scheduler service is restarted
+   shell: service nova-scheduler restart
+
+ - name: Ensure the nova-conductor service is restarted
+   shell: service nova-conductor restart
+
+ - name: Ensure the nova-novncproxy service is restarted
+   shell: service nova-novncproxy restart
+
+ - name: Remove the sqlite database
+   shell: rm -f /var/lib/nova/nova.sqlite 2>/dev/null
+
+ - name: Check connectivity to identity service
+   environment: env
+   shell: nova endpoints | grep " id " | wc -l
+   register: nova_endpoint_status
+
+ - name: Check connectivity to identity service
+   debug: msg="Found {{ nova_endpoint_status.stdout }} API endpoints. Expecting at least 9"
+   failed_when: "{{ nova_endpoint_status.stdout }} < 9"
+
+ - name: Check the image service catalog is functional
+   shell: nova image-list | grep "ACTIVE" | wc -l
+   environment: env
+   register: image_check
+
+ - name: Check the image service catalog is functional
+   debug: msg="Found {{ image_check.stdout }} active images"
+   failed_when: image_check.stdout.find('0') != -1
+

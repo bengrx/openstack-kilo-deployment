@@ -1,0 +1,10 @@
+---
+
+- hosts: openstack-cpu-nodes
+
+  sudo: yes
+
+  roles:
+
+    - neutron-cpu
+

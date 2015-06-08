@@ -1,0 +1,37 @@
+---
+
+ - name: Copy the new sysctl.conf file
+   copy: src=sysctl.conf dest=/etc/sysctl.conf
+
+ - name: Apply the new kernel parameters
+   shell: sysctl -p
+
+ - name: Ensure that the neutron-plugin-ml2 package is installed
+   apt: pkg=neutron-plugin-ml2 state=installed
+
+ - name: Ensure that the neutron-plugin-openvswitch-agent package is installed
+   apt: pkg=neutron-plugin-openvswitch-agent state=installed
+
+ - name: Ensure that the tunnel interface is started
+   shell: ifup "{{ net_tun_dev }}"
+
+ - name: Get the tunnel interfaces ip
+   shell: ifconfig "{{ net_tun_dev }}" | grep -Eo "inet add.*Bcast" | grep -Eo "([0-9]{1,3}.){3}.[0-9]{1,3}"
+   register: tunnel_interface_ip
+
+ - name: Copy the templated neutron.conf file
+   template: src=neutron.conf dest=/etc/neutron/neutron.conf
+
+ - name: Copy the templated ml2_conf.ini file
+   template: src=ml2_conf.ini dest=/etc/neutron/plugins/ml2/ml2_conf.ini
+
+ - name: Ensure the openvswitch-switch service is restarted
+   shell: service openvswitch-switch restart
+
+ - name: Ensure the nova-compute service is restarted
+   shell: service nova-compute restart
+
+ - name: Ensure the neutron-plugin-openvswitch-agent service is restarted
+   shell: service neutron-plugin-openvswitch-agent restart
+
+

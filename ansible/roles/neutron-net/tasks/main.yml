@@ -1,0 +1,85 @@
+---
+
+ - name: Copy the new sysctl.conf file
+   copy: src=sysctl.conf dest=/etc/sysctl.conf
+
+ - name: Apply the new kernel parameters
+   shell: sysctl -p
+
+
+ - name: Ensure that the neutron-plugin-ml2 package is installed
+   apt: pkg=neutron-plugin-ml2 state=installed
+
+ - name: Ensure that the neutron-plugin-openvswitch-agent package is installed
+   apt: pkg=neutron-plugin-openvswitch-agent state=installed
+
+ - name: Ensure that the neutron-l3-agent package is installed
+   apt: pkg=neutron-l3-agent state=installed
+
+ - name: Ensure that the neutron-dhcp-agent package is installed
+   apt: pkg=neutron-dhcp-agent state=installed
+
+ - name: Ensure that the neutron-metadata-agent package is installed
+   apt: pkg=neutron-metadata-agent state=installed
+
+ - name: Ensure that the ethtool package is installed
+   apt: pkg=ethtool state=installed
+
+ - name: Ensure that the dnsmasq package is installed
+   apt: pkg=dnsmasq state=installed
+
+ - name: Ensure the tunnel interface is up
+   shell: ifup "{{ net_tun_dev }}"
+ - name: Get the tunnel interfaces ip
+   shell: ifconfig "{{ net_tun_dev }}" | grep -Eo "inet add.*Bcast" | grep -Eo "([0-9]{1,3}.){3}.[0-9]{1,3}"
+   register: tunnel_interface_ip
+
+ - name: Copy the templated neutron.conf file
+   template: src=neutron.conf dest=/etc/neutron/
+
+ - name: Copy the templated ml2_conf.ini file
+   template: src=ml2_conf.ini  dest=/etc/neutron/plugins/ml2/ml2_conf.ini
+
+ - name: Copy the templated l3_agent.ini file
+   template: src=l3_agent.ini dest=/etc/neutron/l3_agent.ini
+
+ - name: Copy the templated dhcp_agent.ini file
+   template: src=dhcp_agent.ini dest=/etc/neutron/dhcp_agent.ini
+
+ - name: Create the dnsmasq-neutron.conf file
+   shell: echo "dhcp-option-force=26,1454" >/etc/neutron/dnsmasq-neutron.conf
+
+ - name: Stop the dnsmasq service
+   shell: service dnsmasq restart
+
+ - name: Copy the templated metadata_agent.ini file
+   template: src=metadata_agent.ini dest=/etc/neutron/metadata_agent.ini
+
+ - name: Ensure the nova-api service is restarted on master controller node
+   shell: service nova-api restart
+   delegate_to: "{{ openstack_ctl_master }}"
+
+ - name: Ensure the openvswitch-switch service is restarted
+   shell: service openvswitch-switch restart
+
+ - name: Add the external bridge
+   shell: ovs-vsctl add-br br-ex; sleep 1
+
+ - name: Add a port to the external bridge
+   shell: ovs-vsctl add-port br-ex "{{ net_ext_dev }}"; sleep 1
+
+ - name: Disable GRO on external network interface
+   shell: ethtool -K "{{ net_ext_dev }}" gro off
+
+ - name: Ensure the neutron-plugin-openvswitch-agent service is restarted
+   shell: service neutron-plugin-openvswitch-agent restart
+
+ - name: Ensure the neutron-l3-agent service is restarted
+   shell: service neutron-l3-agent restart
+
+ - name: Ensure the neutron-dhcp-agent service is restarted
+   shell: service neutron-dhcp-agent restart
+
+ - name: Ensure the neutron-metadata-agent service is restarted
+   shell: service neutron-metadata-agent restart
+
