@@ -24,6 +24,9 @@
  - name: Ensure that apache2 is installed
    apt: pkg=apache2 state=installed
 
+ - name: Ensure that dnsmasq is restarted
+   service: name=dnsmasq state=restarted
+
  - name: Copy the templated dnsmasq.conf file
    template: src=dnsmasq.j2 dest=/etc/dnsmasq.conf
 
