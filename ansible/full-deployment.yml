@@ -2,7 +2,7 @@
 
 - include: common-pre-actions.yml
 - include: database.yml
-# - include: high-availability.yml
+- include: high-availability.yml
 - include: keystone.yml
 - include: glance.yml
 - include: nova-cpu.yml
@@ -17,5 +17,5 @@
 - include: heat.yml
 - include: swift-ctl.yml
 - include: ceilometer-ctl.yml
-# - include: designate.yml
-# - include: swift-storage.yml
+- include: designate.yml
+- include: swift-storage.yml

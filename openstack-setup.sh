@@ -90,7 +90,11 @@ if [ "$deploy_openstack" == "Y" ] || [ "$deploy_openstack" == "y" ];then
 
   if [ -f $(dirname $0)/openstack-deploy.sh ];then
 
-    ./openstack-deploy.sh
+
+    read -p "What type of deployment would youn like to use? [ minimal | ha | full ]: " deployment_type
+    echo -e "$LINE_BREAK"
+
+    ./openstack-deploy.sh $deployment_type
 
   else
     printMessage "./openstack-deploy.sh was not found" "0;31"

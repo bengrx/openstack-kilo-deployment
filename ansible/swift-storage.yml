@@ -1,0 +1,12 @@
+- hosts: openstack-ctl-slave-nodes
+
+  sudo: yes
+
+  vars:
+
+  roles:
+
+#    - ceilometer-ctl
+
+
+
