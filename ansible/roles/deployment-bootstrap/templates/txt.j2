@@ -1,13 +1,22 @@
-default install
+default local
+
+label local
+        menu label Boot local hard drive
+        LOCALBOOT 0
+	menu default
 
 label install_ctl
-	menu label ^Install OpenStack ctl node
-	menu default
+	menu label ^OpenStack Controller Node
 	kernel ubuntu-installer/amd64/linux
-	append vga=788 initrd=ubuntu-installer/amd64/initrd.gz --- auto=true url=http://{{ boot_interface_address }}/preseed_ctl.cfg quiet 
+	append vga=788 initrd=ubuntu-installer/amd64/initrd.gz --- auto=true url=http://{{ boot_interface_address }}/preseed_ctl.cfg hostname=openstack-ctl domain={{ boot_domain }} quiet 
+
+label install_net
+	menu label ^OpenStack Network Node
+	kernel ubuntu-installer/amd64/linux
+	append vga=788 initrd=ubuntu-installer/amd64/initrd.gz --- auto=true url=http://{{ boot_interface_address }}/preseed_ctl.cfg hostname=openstack-net domain={{ boot_domain }} quiet 
 
 label install
-	menu label ^Install Ubuntu Trusty 14.04
+	menu label ^Ubuntu Trusty 14.04
 	kernel ubuntu-installer/amd64/linux
 	append vga=788 initrd=ubuntu-installer/amd64/initrd.gz --- quiet 
 

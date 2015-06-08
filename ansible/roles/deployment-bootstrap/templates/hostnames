@@ -1,0 +1,6 @@
+
+127.0.0.1	localhost
+
+192.168.10.50	openstack-ctl-01	
+192.168.10.100	openstack-cpu-01
+192.168.10.150	openstack-net-01

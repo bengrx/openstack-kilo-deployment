@@ -4,19 +4,5 @@
 
    sudo: yes
 
-   vars:
-
-     deployment_user: openstack
-
-     public_interface: "wlan0"
-     boot_interface: "eth0"
-     boot_interface_address: "192.168.10.1"
-     boot_domain: "home"
-     boot_dhcp_range_begin: "192.168.10.10"
-     boot_dhcp_range_end: "192.168.10.40"
-     boot_mask: "255.255.255.0"
-     boot_dhcp_lease_time_hours: "4"
-     remote_netboot_image_path: "http://archive.ubuntu.com/ubuntu/dists/trusty-updates/main/installer-amd64/current/images/utopic-netboot/netboot.tar.gz"
-
    roles:
      - deployment-bootstrap
