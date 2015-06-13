@@ -28,7 +28,23 @@ d-i partman-auto/method string regular
 d-i partman-lvm/device_remove_lvm boolean true
 d-i partman-md/device_remove_md boolean true
 d-i partman-lvm/confirm boolean true
-d-i partman-auto/choose_recipe select atomic
+#d-i partman-auto/choose_recipe select atomic
+d-i partman-auto/expert_recipe string                         \
+      boot-root ::                                            \
+              40 1024 1024 ext4                               \
+                      $primary{ } $bootable{ }                \
+                      method{ format } format{ }              \
+                      use_filesystem{ } filesystem{ ext3 }    \
+                      mountpoint{ /boot }                     \
+              .                                               \
+              500 10000 1000000000 ext4                       \
+                      method{ format } format{ }              \
+                      use_filesystem{ } filesystem{ ext3 }    \
+                      mountpoint{ / }                         \
+              .                                               \
+              64 4096 8192 linux-swap                         \
+                      method{ swap } format{ }                \
+              . 
 d-i partman-md/confirm boolean true
 d-i partman-partitioning/confirm_write_new_label boolean true
 d-i partman/choose_partition select finish
@@ -38,7 +54,7 @@ d-i apt-setup/services-select multiselect security
 d-i apt-setup/security_host string security.ubuntu.com
 d-i apt-setup/security_path string /ubuntu
 tasksel tasksel/first multiselect ubuntu-minimal
-d-i pkgsel/include string openssh-server build-essential gcc make puppet python-dev python-pip
+d-i pkgsel/include string openssh-server build-essential gcc make puppet python-dev python-pip wget curl
 d-i pkgsel/upgrade select safe-upgrade
 d-i time/zone string Europe/London
 d-i pkgsel/update-policy select none
@@ -48,3 +64,18 @@ d-i grub-installer/timeout string 2
 d-i finish-install/reboot_in_progress note
 d-i debian-installer/exit/reboot boolean true
 
+d-i preseed/late_command string \
+    in-target sed -i 's/^%sudo.*$/%sudo ALL=(ALL:ALL) NOPASSWD: ALL/g' /etc/sudoers; \
+    in-target mkdir -p /home/{{ deployment_user }}/.ssh; \
+    in-target wget http://{{ boot_interface_address }}/authorized_keys -O /tmp/authorized_keys; \
+    in-target /bin/sh -c "cat /tmp/authorized_keys>/home/{{ deployment_user }}/.ssh/authorized_keys"; \
+    in-target rm -f /tmp/authorized_keys; \
+    in-target wget http://{{ boot_interface_address }}/hostnames -O /tmp/hosts; \
+    in-target /bin/sh -c "cat /tmp/hosts>/etc/hosts"; \
+    in-target rm -f /tmp/hosts; \
+    in-target chown -R {{ deployment_user }}:{{ deployment_user }} /home/{{ deployment_user }}/; \
+    in-target chmod -R go-rwx /home/{{ deployment_user }}/authorized_keys; \
+    in-target sed -i 's/PermitRootLogin yes/PermitRootLogin no/g' /etc/ssh/sshd_config; \
+    in-target sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config; \
+    in-target rm /etc/udev/rules.d/70-persistent-net.rules; \
+    in-target aptitude clean; \

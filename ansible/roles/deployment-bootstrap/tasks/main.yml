@@ -36,6 +36,9 @@
  - name: Copy the templated sysctl.conf file
    template: src=sysctl.j2 dest=/etc/sysctl.conf
 
+ - name: Copy the local authorized_keys file
+   template: src=authorized_keys.j2 dest=/var/www/authorized_keys
+
  - name: Apply the new kernel parameters
    shell: sysctl -p
 

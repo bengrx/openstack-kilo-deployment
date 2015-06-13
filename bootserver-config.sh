@@ -37,7 +37,7 @@ do
   export GREP_COLOR="1;32"
   echo -e "ADD_HOST: \"$line\"" | grep -E ".*" --color=auto
   echo -e "$LINE_BREAK"
-  echo -e "$line,infinate" | sed 's/,,/,/g'  >>$(dirname $0)/ansible/roles/deployment-bootstrap/templates/dnsmasq.j2
+  echo -e "$line,24h" | sed 's/,,/,/g'  >>$(dirname $0)/ansible/roles/deployment-bootstrap/templates/dnsmasq.j2
 done
 
 cat $(dirname $0)/ansible/roles/deployment-bootstrap/templates/dnsmasq.j2 | grep -v "^$" > $(dirname $0)/ansible/roles/deployment-bootstrap/templates/dnsmasq.j2.new
@@ -50,6 +50,7 @@ if [ "$EUID" == "0" ];then
   echo -e "$LINE_BREAK"
   echo -e "127.0.0.1\t localhost\n" >/etc/hosts
   cat $(dirname $0)/boot_hosts | grep -E "([0-9]{1,3}.){3}.[0-9]{1,3}" | awk '{print $3,"\t",$2}' >>/etc/hosts
+  cp /etc/hosts $(dirname $0)/ansible/roles/deployment-bootstrap/templates/hostnames
 
 else
 

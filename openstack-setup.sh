@@ -46,15 +46,12 @@ do
   printMessage "$host" "0;32"
   printMessage "ICMP Test\t:\t[ $ping_status ]" "0;33"
   printMessage "SSH Port Test\t:\t[ $ssh_status ]" "0;33"
-  printMessage "SSH as $1\t:\t[ $ssh_command_status ]" "0;33"
+  printMessage "SSH Connection\t:\t[ $ssh_command_status ]" "0;33"
   sudo_detected="$(ssh $1@$host 'sudo ifconfig' | grep -E "([0-9]{1,3}.){3}[0-9]{1,3}" | wc -l)"
 
   if [ "$sudo_detected" == "0" ];then
 
-    echo -e "$LINE_BREAK"
-    printMessage "Please add the user \"$1\" to the sudoers file via visudo;" "0;32"
-    printMessage "$1 ALL=(ALL) NOPASSWD:ALL" "0;31"
-    ssh $1@$host
+    printMessage "Sudo Test\t:\t[ 0 ]" "0;33"
   else
     printMessage "Sudo Test\t:\t[ 1 ]" "0;33"
   fi
