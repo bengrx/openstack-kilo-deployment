@@ -2,12 +2,6 @@
 LINE_BREAK="----------------------------------------------------------------------------------------------------------------"
 OUTPUT_HOSTS="hosts"
 
-#if [ ! -f $(dirname $0)/hosts ];then
-
-#  echo -e "Could not find file $(dirname $0)/hosts\n$LINE_BREAK"
-#  exit 1
-#fi
-
 function getValue
 {
   echo -e "$LINE_BREAK"
