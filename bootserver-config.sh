@@ -50,7 +50,6 @@ if [ "$EUID" == "0" ];then
   echo -e "$LINE_BREAK"
   echo -e "127.0.0.1\t localhost\n" >/etc/hosts
   cat $(dirname $0)/boot_hosts | grep -E "([0-9]{1,3}.){3}.[0-9]{1,3}" | awk '{print $3,"\t",$2}' >>/etc/hosts
-  cp /etc/hosts $(dirname $0)/ansible/roles/deployment-bootstrap/templates/hostnames
 
 else
 

@@ -63,19 +63,3 @@ d-i grub-installer/with_other_os boolean true
 d-i grub-installer/timeout string 2
 d-i finish-install/reboot_in_progress note
 d-i debian-installer/exit/reboot boolean true
-
-d-i preseed/late_command string \
-    in-target sed -i 's/^%sudo.*$/%sudo ALL=(ALL:ALL) NOPASSWD: ALL/g' /etc/sudoers; \
-    in-target mkdir -p /home/{{ deployment_user }}/.ssh; \
-    in-target wget http://{{ boot_interface_address }}/authorized_keys -O /tmp/authorized_keys; \
-    in-target /bin/sh -c "cat /tmp/authorized_keys>/home/{{ deployment_user }}/.ssh/authorized_keys"; \
-    in-target rm -f /tmp/authorized_keys; \
-    in-target wget http://{{ boot_interface_address }}/hostnames -O /tmp/hosts; \
-    in-target /bin/sh -c "cat /tmp/hosts>/etc/hosts"; \
-    in-target rm -f /tmp/hosts; \
-    in-target chown -R {{ deployment_user }}:{{ deployment_user }} /home/{{ deployment_user }}/; \
-    in-target chmod -R go-rwx /home/{{ deployment_user }}/authorized_keys; \
-    in-target sed -i 's/PermitRootLogin yes/PermitRootLogin no/g' /etc/ssh/sshd_config; \
-    in-target sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config; \
-    in-target rm /etc/udev/rules.d/70-persistent-net.rules; \
-    in-target aptitude clean; \

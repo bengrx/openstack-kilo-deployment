@@ -27,17 +27,14 @@
  - name: Ensure that apache2 is installed
    apt: pkg=apache2 state=installed
 
- - name: Ensure that dnsmasq is restarted
-   service: name=dnsmasq state=restarted
-
  - name: Copy the templated dnsmasq.conf file
    template: src=dnsmasq.j2 dest=/etc/dnsmasq.conf
 
+ - name: Ensure that dnsmasq is restarted
+   service: name=dnsmasq state=restarted
+
  - name: Copy the templated sysctl.conf file
    template: src=sysctl.j2 dest=/etc/sysctl.conf
-
- - name: Copy the local authorized_keys file
-   template: src=authorized_keys.j2 dest=/var/www/authorized_keys
 
  - name: Apply the new kernel parameters
    shell: sysctl -p
@@ -73,14 +70,11 @@
  - name: Append a line to load the rules to interfaces file
    lineinfile: dest=/etc/network/interfaces line='up iptables-restore < /etc/iptables.ipv4.nat' state=present
 
- - name: Copy the preseed_ctl.cfg file to /var/www
-   template: src=preseed_ctl.j2 dest=/var/www/preseed_ctl.cfg
+ - name: Copy the preseed_openstack.cfg file to /var/www
+   template: src=preseed_openstack.j2 dest=/var/www/preseed_openstack.cfg
 
  - name: Copy the pxelinux.cfg/default config file
    template: src=default.j2 dest=/srv/tftp/pxelinux.cfg/default
-
- - name: Copy the hostnames file 
-   template: src=hostnames dest=/var/www/hostnames
 
  - name: Remove the index.html file from /var/www/
    shell: rm -f /var/www/index.html
