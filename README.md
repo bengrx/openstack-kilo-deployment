@@ -2,7 +2,7 @@
 
 # Installation From Scratch
 
-\# Bootstrap the deployment server
+\# Bootstrap the deployment server<br>
 apt-get update && apt-get install -y git
 echo -e "y\n" | ssh-keygen -q -t rsa -N "" -f ~/.ssh/id_rsa && cat ~/.ssh/id_rsa.pub; cd ~/
 git clone git@github.com:bengrx/openstack-kilo-deployment.git && cd openstack-kilo-deployment
