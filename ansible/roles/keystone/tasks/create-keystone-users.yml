@@ -272,39 +272,39 @@
 
  # Perform keystone setup for additional services, endpoints, projects and users (SWIFT)
 
- - name: Check for the swift user
-   environment: env
-   shell: openstack user list 2>/dev/null | grep "swift" | wc -l
-   register: swift_user_exists
+ #- name: Check for the swift user
+ #  environment: env
+ #  shell: openstack user list 2>/dev/null | grep "swift" | wc -l
+ #  register: swift_user_exists
 
- - name: Create the swift user
-   environment: env
-   shell: openstack user create --password {{ swift_pass }} swift
-   when: swift_user_exists.stdout.find('0') != -1  
+ #- name: Create the swift user
+ #  environment: env
+ #  shell: openstack user create --password {{ swift_pass }} swift
+ #  when: swift_user_exists.stdout.find('0') != -1  
 
- - name: Add the admin role to the swift user
-   shell: openstack role add --project service --user swift admin 2>/dev/null; sleep 1
-   environment: env
+ #- name: Add the admin role to the swift user
+ #  shell: openstack role add --project service --user swift admin 2>/dev/null; sleep 1
+ #  environment: env
 
- - name: Check for swift service
-   environment: env
-   shell: openstack service list 2>/dev/null | grep "swift " | wc -l
-   register: swift_service_exists
+ #- name: Check for swift service
+ #  environment: env
+ #  shell: openstack service list 2>/dev/null | grep "swift " | wc -l
+ #  register: swift_service_exists
 
- - name: Create the swift service
-   environment: env
-   shell: openstack service create --type object-store --description "OpenStack Object Storage Service" swift
-   when: swift_service_exists.stdout.find('0') != -1
+ #- name: Create the swift service
+ #  environment: env
+ #  shell: openstack service create --type object-store --description "OpenStack Object Storage Service" swift
+ #  when: swift_service_exists.stdout.find('0') != -1
 
- - name: Check for swift service API endpoint
-   environment: env
-   shell: openstack endpoint list 2>/dev/null | grep "object-store" | wc -l
-   register: swift_endpoint_exists
+ #- name: Check for swift service API endpoint
+ #  environment: env
+ #  shell: openstack endpoint list 2>/dev/null | grep "object-store" | wc -l
+ #  register: swift_endpoint_exists
    
- - name: Create the swift endpoint
-   environment: env
-   shell: openstack endpoint create  --publicurl 'http://{{ openstack_ctl_master }}:8080/v1/AUTH_%(tenant_id)s' --internalurl 'http://{{ openstack_ctl_master }}:8080/v1/AUTH_%(tenant_id)s' --adminurl http://{{ openstack_ctl_master }}:8080 --region {{ openstack_region }} object-store
-   when: swift_endpoint_exists.stdout.find('0') != -1
+ #- name: Create the swift endpoint
+ #  environment: env
+ #  shell: openstack endpoint create  --publicurl 'http://{{ openstack_ctl_master }}:8080/v1/AUTH_%(tenant_id)s' --internalurl 'http://{{ openstack_ctl_master }}:8080/v1/AUTH_%(tenant_id)s' --adminurl http://{{ openstack_ctl_master }}:8080 --region {{ openstack_region }} object-store
+ #  when: swift_endpoint_exists.stdout.find('0') != -1
 
  # Perform keystone setup for additional services, endpoints, projects and users (HEAT)
 
