@@ -1,4 +1,0 @@
-# MAC Address		Hostname		IP Address
-08:00:27:20:46:F0	openstack-ctl-01	192.168.10.50	
-08:00:27:FC:44:67	openstack-cpu-01	192.168.10.100
-08:00:27:CF:AB:0D	openstack-net-01	192.168.10.150

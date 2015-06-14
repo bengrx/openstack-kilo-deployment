@@ -1,0 +1,14 @@
+#!/bin/bash
+
+playbook="$(dirname $0)/ansible/nodebase.yml"
+
+if [ ! -f "$playbook" ];then
+
+  echo -e "Playbook \"$playbook\" was not found"
+  exit 1
+
+else
+
+  ansible-playbook "$playbook" --ask-pass
+  exit 0
+fi

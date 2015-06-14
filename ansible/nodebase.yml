@@ -1,0 +1,10 @@
+---
+
+- hosts: openstack-all-nodes
+
+  sudo: yes
+
+  roles:
+
+    - nodebase
+

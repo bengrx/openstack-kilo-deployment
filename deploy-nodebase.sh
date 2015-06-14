@@ -1,7 +1,6 @@
 #!/bin/bash
 
-
-playbook="$(dirname $0)/ansible/network-setup.yml"
+playbook="$(dirname $0)/ansible/nodebase.yml"
 
 if [ ! -f "$playbook" ];then
 

@@ -16,8 +16,7 @@ d-i mirror/http/directory string /ubuntu
 d-i mirror/http/proxy string
 d-i passwd/username string {{ deployment_user }}
 d-i passwd/user-fullname string {{ deployment_user }}
-d-i passwd/user-password password {{ deployment_user }}
-d-i passwd/user-password-again password {{ deployment_user }}
+d-i passwd/user-password-crypted password {{ deployment_user_pass }}
 d-i user-setup/encrypt-home boolean false
 d-i time/zone string GB/London
 d-i clock-setup/utc boolean false
@@ -54,6 +53,10 @@ d-i apt-setup/services-select multiselect security
 d-i apt-setup/security_host string security.ubuntu.com
 d-i apt-setup/security_path string /ubuntu
 tasksel tasksel/first multiselect ubuntu-minimal
+
+d-i preseed/late_command string sed 's/%sudo\tALL=(ALL:ALL) ALL/%sudo\tALL=(ALL) NOPASSWD:ALL/g' \
+curl {{ boot_interface_address }}/hosts -O /etc/hosts; chmod 644 /etc/hosts
+
 d-i pkgsel/include string openssh-server build-essential gcc make puppet python-dev python-pip wget curl
 d-i pkgsel/upgrade select safe-upgrade
 d-i time/zone string Europe/London

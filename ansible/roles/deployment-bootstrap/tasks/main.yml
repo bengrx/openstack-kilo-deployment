@@ -12,26 +12,26 @@
  - name: Ensure that dnsmasq is installed
    apt: pkg=dnsmasq state=installed
 
- - name: Ensure that python-dev is installed
-   apt: pkg=python-dev state=installed
-
- - name: Ensure that python-pip is installed
-   apt: pkg=python-pip state=installed
-
- - name: Ensure that ssh-askpass is installed
-   apt: pkg=ssh-askpass state=installed
+ - name: Ensure that sshpass is installed
+   apt: pkg=sshpass state=installed
 
  - name: Ensure that nmap is installed
    apt: pkg=nmap state=installed
-
- - name: Ensure that ansible is installed
-   shell: pip install ansible
 
  - name: Ensure that apache2 is installed
    apt: pkg=apache2 state=installed
 
  - name: Copy the templated dnsmasq.conf file
    template: src=dnsmasq.j2 dest=/etc/dnsmasq.conf
+
+ - name: Copy the templated hosts 
+   template: src=hosts.j2 dest=/var/www/hosts
+
+ - name: Ensure that dnsmasq service is stopped
+   service: name=dnsmasq state=stopped
+
+ - name: Remove the dhcp lease file for dnsmasq
+   shell: rm -f /var/lib/misc/dnsmasq.leases
 
  - name: Ensure that dnsmasq is restarted
    service: name=dnsmasq state=restarted
