@@ -18,6 +18,9 @@
  - name: Ensure that python-pip is installed
    apt: pkg=python-pip state=installed
 
+ - name: Ensure that ssh-askpass is installed
+   apt: pkg=ssh-askpass state=installed
+
  - name: Ensure that nmap is installed
    apt: pkg=nmap state=installed
 
