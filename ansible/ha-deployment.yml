@@ -15,7 +15,5 @@
 - include: cinder-storage.yml
 - include: cinder-ctl.yml
 # - include: heat.yml
-# - include: swift-ctl.yml
 # - include: ceilometer-ctl.yml
 # - include: designate.yml
-# - include: swift-storage.yml
