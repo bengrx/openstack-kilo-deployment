@@ -7,6 +7,9 @@ apt-get update && apt-get install -y git<br>
 echo -e "y\n" | ssh-keygen -q -t rsa -N "" -f ~/.ssh/id_rsa && cd ~/<br>
 git clone git@github.com:bengrx/openstack-kilo-deployment.git && cd openstack-kilo-deployment
 
+\# Bootstrap the deployment server<br>
+./bootstrap.sh
+
 \# Configure OpenStack parameters and authentication tokens<br>
 ./configure-openstack.sh
 
