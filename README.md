@@ -10,7 +10,7 @@
 ./deploy-bootserver.sh
 
 \# Deploy base configuration to machines after inital deployment<br>
-./deploy-networking.sh
+./deploy-base.sh
 
 \# Deploy OpenStack kilo minimal against the environment [ minimal | ha | full ]<br>
 ./deploy-openstack.sh minimal
