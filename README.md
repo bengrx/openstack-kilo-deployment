@@ -2,7 +2,7 @@
 
 # Installation From Scratch
 
-<bash>
+<shell>
 \# Bootstrap the deployment server<br>
 apt-get update && apt-get install -y git<br>
 echo -e "y\n" | ssh-keygen -q -t rsa -N "" -f ~/.ssh/id_rsa && cd ~/<br>
