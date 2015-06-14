@@ -24,12 +24,3 @@ git clone git@github.com:bengrx/openstack-kilo-deployment.git && cd openstack-ki
 \# Deploy OpenStack kilo minimal against the environment [ minimal | ha | full ]<br>
 ./deploy-openstack.sh minimal
 
-# Quick Installation
-\# Configure OpenStack parameters and authentication tokens<br>
-./configure-openstack.sh
-
-\# Deploy base configuration to machines after inital deployment<br>
-./deploy-base.sh
-
-\# Deploy OpenStack kilo minimal against the environment [ minimal | ha | full ]<br>
-./deploy-openstack.sh minimal
