@@ -152,7 +152,12 @@ echo -e "$LINE_BREAK"
 export GREP_COLOR="01;32"
 echo -e "Configuring SSH" | grep ".*" --color=auto
 echo -e "$LINE_BREAK"
-echo -e  'y\n'|ssh-keygen -q -t rsa -N "" -f ~/.ssh/id_rsa 2>&1>/dev/null
+
+if [ ! -f ~/.ssh/id_rsa ];then
+
+  echo -e  'y\n'|ssh-keygen -q -t rsa -N "" -f ~/.ssh/id_rsa 2>&1>/dev/null
+fi
+
 cat ~/.ssh/id_rsa.pub>~/.ssh/authorized_keys
 echo -e "Host *\n  StrictHostKeyChecking no\n  UserKnownHostsFile /dev/null\n  LogLevel ERROR">~/.ssh/config
 echo -e "Configuration complete" | grep ".*" --color=auto
