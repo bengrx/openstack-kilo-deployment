@@ -10,6 +10,6 @@ if [ ! -f "$playbook" ];then
 
 else
 
-  ansible-playbook "$playbook"
+  ansible-playbook "$playbook" --ask-pass
   exit 0
 fi
