@@ -54,8 +54,8 @@ d-i apt-setup/security_host string security.ubuntu.com
 d-i apt-setup/security_path string /ubuntu
 tasksel tasksel/first multiselect ubuntu-minimal
 
-d-i preseed/late_command string sed 's/%sudo\tALL=(ALL:ALL) ALL/%sudo\tALL=(ALL) NOPASSWD:ALL/g' \
-curl {{ boot_interface_address }}/hosts -O /etc/hosts; chmod 644 /etc/hosts
+d-i preseed/late_command string in-target sed -i 's/%sudo\tALL=(ALL:ALL) ALL/%sudo\tALL=(ALL) NOPASSWD:ALL/' /etc/sudoers; \
+in-target curl {{ boot_interface_address }}/hosts -O /etc/hosts; int-target chmod 644 /etc/hosts;
 
 d-i pkgsel/include string openssh-server build-essential gcc make puppet python-dev python-pip wget curl
 d-i pkgsel/upgrade select safe-upgrade
@@ -66,3 +66,4 @@ d-i grub-installer/with_other_os boolean true
 d-i grub-installer/timeout string 2
 d-i finish-install/reboot_in_progress note
 d-i debian-installer/exit/reboot boolean true
+

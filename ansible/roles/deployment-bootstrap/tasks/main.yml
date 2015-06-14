@@ -25,7 +25,7 @@
    template: src=dnsmasq.j2 dest=/etc/dnsmasq.conf
 
  - name: Copy the templated hosts 
-   template: src=hosts.j2 dest=/var/www/hosts
+   template: src=hosts dest=/var/www/hosts
 
  - name: Ensure that dnsmasq service is stopped
    service: name=dnsmasq state=stopped
