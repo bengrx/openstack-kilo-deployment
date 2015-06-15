@@ -1,4 +1,0 @@
-# MAC Address		Hostname		IP Address
-aa:aa:aa:aa:aa:aa	openstack-ctl-01	192.168.10.50
-bb:bb:bb:bb:bb:bb	openstack-cpu-01	192.168.10.100
-cc:cc:cc:cc:cc:cc	openstack-net-01	192.168.10.150
