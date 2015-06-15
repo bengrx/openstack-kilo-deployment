@@ -25,7 +25,7 @@
    template: src=dnsmasq.j2 dest=/etc/dnsmasq.conf
 
  - name: Copy the templated hosts 
-   template: src=hosts dest=/var/www/hosts
+   template: src=hosts.j2 dest=/var/www/hosts
 
  - name: Ensure that dnsmasq service is stopped
    service: name=dnsmasq state=stopped
@@ -75,6 +75,9 @@
 
  - name: Copy the preseed_openstack.cfg file to /var/www
    template: src=preseed_openstack.j2 dest=/var/www/preseed_openstack.cfg
+
+ - name: Copy the templated authorized_keys file
+   template: src=authorized_keys.j2 dest=/var/www/authorized_keys
 
  - name: Copy the pxelinux.cfg/default config file
    template: src=default.j2 dest=/srv/tftp/pxelinux.cfg/default

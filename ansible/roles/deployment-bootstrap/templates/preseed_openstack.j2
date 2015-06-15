@@ -16,6 +16,7 @@ d-i mirror/http/directory string /ubuntu
 d-i mirror/http/proxy string
 d-i passwd/username string {{ deployment_user }}
 d-i passwd/user-fullname string {{ deployment_user }}
+d-i passwd/user-uid string 1000
 d-i passwd/user-password-crypted password {{ deployment_user_pass }}
 d-i user-setup/encrypt-home boolean false
 d-i time/zone string GB/London
@@ -33,17 +34,19 @@ d-i partman-auto/expert_recipe string                         \
               40 1024 1024 ext4                               \
                       $primary{ } $bootable{ }                \
                       method{ format } format{ }              \
-                      use_filesystem{ } filesystem{ ext3 }    \
+                      use_filesystem{ } filesystem{ ext4 }    \
                       mountpoint{ /boot }                     \
               .                                               \
               500 10000 1000000000 ext4                       \
+	 	      $lvmok { }			      \
                       method{ format } format{ }              \
-                      use_filesystem{ } filesystem{ ext3 }    \
+                      use_filesystem{ } filesystem{ xfs }     \
                       mountpoint{ / }                         \
               .                                               \
               64 4096 8192 linux-swap                         \
                       method{ swap } format{ }                \
               . 
+d-i partman/mount_style select uuid
 d-i partman-md/confirm boolean true
 d-i partman-partitioning/confirm_write_new_label boolean true
 d-i partman/choose_partition select finish
@@ -55,9 +58,14 @@ d-i apt-setup/security_path string /ubuntu
 tasksel tasksel/first multiselect ubuntu-minimal
 
 d-i preseed/late_command string in-target sed -i 's/%sudo\tALL=(ALL:ALL) ALL/%sudo\tALL=(ALL) NOPASSWD:ALL/' /etc/sudoers; \
-in-target curl {{ boot_interface_address }}/hosts -O /etc/hosts; int-target chmod 644 /etc/hosts;
+in-target wget http://{{ boot_interface_address }}/hosts -O /etc/hosts; in-target chmod 644 /etc/hosts; \
+in-target mkdir -p /home/{{ deployment_user }}/.ssh/; \
+in-target wget http://{{ boot_interface_address }}/authorized_keys -O /home/{{ deployment_user }}/.ssh/authorized_keys; \
+in-target chown -Rv 1000:1000 /home/{{ deployment_user }}/.ssh/; \
+in-target chmod 700 /home/{{ deployment_user }}/.ssh/; \
+in-target chmod 600 /home/{{ deployment_user }}/.ssh/authorized_keys;
 
-d-i pkgsel/include string openssh-server build-essential gcc make puppet python-dev python-pip wget curl
+d-i pkgsel/include string openssh-server build-essential gcc make puppet python-dev python-pip wget curl ssh
 d-i pkgsel/upgrade select safe-upgrade
 d-i time/zone string Europe/London
 d-i pkgsel/update-policy select none
@@ -66,4 +74,3 @@ d-i grub-installer/with_other_os boolean true
 d-i grub-installer/timeout string 2
 d-i finish-install/reboot_in_progress note
 d-i debian-installer/exit/reboot boolean true
-

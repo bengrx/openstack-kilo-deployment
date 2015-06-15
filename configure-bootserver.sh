@@ -23,8 +23,6 @@ if [ ! -f $BASE_PATH/ansible/roles/deployment-bootstrap/templates/dnsmasq.j2 ];t
   exit 2
 fi
 
-cp $BASE_PATH/deploy-nodebase.sh ansible/roles/deployment-bootstrap/templates/deployment-nodebase.j2 2>&1>/dev/null
-
 remove_lines=$(cat $BASE_PATH/ansible/roles/deployment-bootstrap/templates/dnsmasq.j2 | grep "^dhcp-host")
 
 for line in $remove_lines
@@ -63,5 +61,5 @@ else
   echo -e "$LINE_BREAK"
 fi
 
-cat $BASE_PATH/boot_hosts | grep -E "([0-9]{1,3}.){3}.[0-9]{1,3}" | awk '{print $3,"\t",$2}' >$BASE_PATH/ansible/roles/deployment-bootstrap/templates/hosts
+cat $BASE_PATH/boot_hosts | grep -E "([0-9]{1,3}.){3}.[0-9]{1,3}" | awk '{print $3,"\t",$2}' >$BASE_PATH/ansible/roles/deployment-bootstrap/templates/hosts.j2
 

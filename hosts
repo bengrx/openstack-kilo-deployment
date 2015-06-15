@@ -1,0 +1,66 @@
+[deployment-node]
+127.0.0.1
+
+[openstack-ctl-master-nodes]
+192.168.10.50
+
+[openstack-cpu-nodes]
+192.168.10.100
+
+[openstack-net-nodes]
+192.168.10.150
+
+[openstack-ctl-slave-nodes]
+
+[openstack-all-nodes:children]
+openstack-ctl-master-nodes
+openstack-ctl-slave-nodes
+openstack-cpu-nodes
+openstack-net-nodes
+
+[openstack-all-nodes:vars]
+openstack_ctl_master		=	192.168.10.50
+net_man_dev			=	eth0
+net_tun_dev			=	eth1
+net_ext_dev			=	eth2
+net_stg_dev			=	eth3
+openstack_region		=	home
+default_email_address		=	bengreco@linux.com
+default_ntp_server		=	0.uk.pool.ntp.org
+cinder_storage_device		=	sdb
+rabbit_pass			=	c22b2bfcb33914cee77f
+keystone_admin_token		=	325821e2b380c17f8d0d
+keystone_admin_pass		=	d930843bb1ec29f32a7f
+keystone_demo_pass		=	0c8d2b5e7cbb374a4b09
+keystone_dbpass			=	3d3e28f469b8456a5d29
+glance_dbpass			=	bcccba2f92bd507bb63e
+nova_dbpass			=	2be78cb983d84f6d780d
+neutron_dbpass			=	9c2f7aae994879a6cabc
+dash_dbpass			=	a229a7be7ad2837d7ef0
+heat_dbpass			=	4f343f9b89dee97c92a1
+swift_dbpass			=	57eee9931517b9dfe822
+cinder_dbpass			=	d90d9c39936309ac05df
+ceilometer_dbpass		=	0f97fa348293081f08e3
+neutron_metadata_secret		=	3a33b4183e216ae045bc
+telemetry_secret		=	57196934c0b733c9658e
+glance_pass			=	c5d15ad319694e6658fc
+nova_pass			=	36eda9e48df2ba99248d
+neutron_pass			=	af8d6cd27e7df5c5ff25
+cinder_pass			=	37179902c9c5341db6d8
+heat_pass			=	11a492f0067918bce95d
+heat_domain_pass		=	6153b0312215d277e42f
+swift_pass			=	a1b07f8678a04c114e7a
+ceilometer_pass			=	57158075b7005caeabee
+
+[deployment-node:vars]
+deployment_user			=	ben
+deployment_user_pass		=	$1$SWjY1pfQ$YK6OANqY34x54Kb9gl0e6.
+public_interface		=	wlan0
+boot_interface			=	eth0
+boot_domain			=	home
+boot_interface_address		=	192.168.10.1
+boot_dhcp_range_begin		=	192.168.10.10
+boot_dhcp_range_end		=	192.168.10.40
+boot_mask			=	255.255.255.0
+boot_dhcp_lease_time_hours	=	24
+remote_netboot_image_path	=	http://archive.ubuntu.com/ubuntu/dists/trusty-updates/main/installer-amd64/current/images/utopic-netboot/netboot.tar.gz
