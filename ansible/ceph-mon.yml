@@ -1,0 +1,10 @@
+---
+
+- hosts: openstack-ctl-master-nodes:openstack-ctl-slave-nodes
+
+  sudo: yes
+
+  roles:
+
+    - ceph-mon
+
