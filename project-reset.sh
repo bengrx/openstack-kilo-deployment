@@ -11,9 +11,8 @@ if [ "$input" == "y" ] || [ "$input" == "Y" ];then
   echo -e "Resetting OpenStack configuration"
   BASE_PATH="$BASE_PATH"
   rm -f "$BASE_PATH/hosts" 2>&1
-  rm -f "$BASE_PATH/authorized_keys" 2>&1>/dev/null
+  echo " " >"$BASE_PATH/authorized_keys" 2>&1>/dev/null
   rm -f "$BASE_PATH/ansible.cfg" 2>&1>/dev/null
-  rm -f "$BASE_PATH/boot_hosts" 2>&1>/dev/null
 
 else
 
