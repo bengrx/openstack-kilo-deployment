@@ -1,0 +1,5 @@
+hosts*
+boot_hosts.*
+ansible.cfg
+authorized_keys.*
+

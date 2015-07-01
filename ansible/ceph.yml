@@ -1,4 +1,0 @@
----
-
- - include: ceph-mon.yml
-# - include: ceph-osd.yml

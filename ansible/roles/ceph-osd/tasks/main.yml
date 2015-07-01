@@ -1,5 +1,0 @@
----
-
- - name: Get the rabbitmq upstrem repo
-   shell: ls
- 
