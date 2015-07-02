@@ -94,9 +94,9 @@ export GREP_COLOR="01;33"
 
 # Get basic deployment vars
 getValue net_man_dev eth0 "\t\t\t"
-getValue net_tun_dev eth1 "\t\t\t"
-getValue net_ext_dev eth2 "\t\t\t"
-getValue net_stg_dev eth3 "\t\t\t"
+getValue net_stg_dev eth1 "\t\t\t"
+getValue net_tun_dev eth2 "\t\t\t"
+getValue net_ext_dev eth3 "\t\t\t"
 getValue openstack_region home "\t\t"
 getValue default_email_address bengreco@linux.com "\t\t"
 getValue default_ntp_server 0.uk.pool.ntp.org "\t\t"

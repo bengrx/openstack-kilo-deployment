@@ -5,8 +5,8 @@ dhcp-boot=pxelinux.0,pxeserver,{{ boot_interface_address }}
 pxe-service=x86PC, "Install Ubuntu 14.04 Trusty", pxelinux
 enable-tftp
 tftp-root=/srv/tftp
-dhcp-host=aa:aa:aa:aa:aa:aa,openstack-ctl-01,192.168.100.105,1h
-dhcp-host=aa:aa:aa:aa:aa:aa,openstack-ctl-02,192.168.100.106,1h
-dhcp-host=aa:aa:aa:aa:aa:bb,openstack-cpu-01,192.168.100.108,1h
-dhcp-host=aa:aa:aa:aa:aa:bb,openstack-cpu-02,192.168.100.109,1h
-dhcp-host=aa:aa:aa:aa:aa:cc,openstack-net-01,192.168.100.107,1h
+dhcp-host=aa:aa:aa:aa:aa:aa,openstack-net-01,192.168.100.16,1h
+dhcp-host=aa:aa:aa:aa:aa:bb,openstack-ctl-01,192.168.100.17,1h
+dhcp-host=aa:aa:aa:aa:aa:cc,openstack-ctl-02,192.168.100.18,1h
+dhcp-host=aa:aa:aa:aa:aa:dd,openstack-cpu-01,192.168.100.19,1h
+dhcp-host=aa:aa:aa:aa:aa:ee,openstack-cpu-02,192.168.100.20,1h
