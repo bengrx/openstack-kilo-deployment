@@ -1,0 +1,12 @@
+---
+
+- hosts: openstack-all-nodes
+
+  gather_facts: True
+
+  sudo: yes
+
+  roles:
+
+    - deploy-base
+
