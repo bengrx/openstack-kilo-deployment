@@ -163,7 +163,7 @@ if [ -f "$BASE_PATH/authorized_keys" ];then
   cp "$BASE_PATH/authorized_keys" "$BASE_PATH/ansible/roles/deployment-bootstrap/templates/authorized_keys.j2" 2>&1>/dev/null
 fi
 
-cat ~/.ssh/id_rsa.pub>~/.ssh/authorized_keys
+cat ~/.ssh/id_rsa.pub>>~/.ssh/authorized_keys
 echo -e "Host *\n  StrictHostKeyChecking no\n  UserKnownHostsFile /dev/null\n  LogLevel ERROR">~/.ssh/config
 echo -e "Configuration complete" | grep ".*" --color=auto
 echo -e "$LINE_BREAK"
