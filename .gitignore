@@ -1,5 +1,5 @@
 hosts*
-boot_hosts.*
+deploy_hosts
 ansible.cfg
 authorized_keys.*
 

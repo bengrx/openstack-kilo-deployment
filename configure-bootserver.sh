@@ -6,11 +6,11 @@ echo -e "$LINE_BREAK"
 echo -e "Configuring dnsmasq.conf DHCP reserved addresses" | grep -E ".*" --color=auto
 echo -e "$LINE_BREAK"
 
-if [ ! -f $BASE_PATH/boot_hosts ];then
+if [ ! -f $BASE_PATH/deploy_hosts ];then
 
 
   export GREP_COLOR="0;31"
-  echo -e "Could not find file $BASE_PATH/boot_hosts" | grep ".*" --color=auto
+  echo -e "Could not find file $BASE_PATH/deploy_hosts" | grep ".*" --color=auto
   echo -e "$LINE_BREAK"
   exit 1
 fi
@@ -33,7 +33,7 @@ do
   echo -e "$LINE_BREAK"
 done
 
-add_lines=$(cat $BASE_PATH/boot_hosts | grep -v "^#" | grep ":" | sed -e 's/\t/,/g' -e 's/^/dhcp-host=/g')
+add_lines=$(cat $BASE_PATH/deploy_hosts | grep -v "^#" | grep ":" | sed -e 's/\t/,/g' -e 's/^/dhcp-host=/g')
 
 for line in $add_lines
 do
@@ -52,7 +52,7 @@ if [ "$EUID" == "0" ];then
   echo -e "Local /etc/hosts file has been generated" | grep -E ".*" --color=auto
   echo -e "$LINE_BREAK"
   echo -e "127.0.0.1\t localhost\n" >/etc/hosts
-  cat $BASE_PATH/boot_hosts | grep -E "([0-9]{1,3}.){3}.[0-9]{1,3}" | awk '{print $3,"\t",$2}' >>/etc/hosts
+  cat $BASE_PATH/deploy_hosts | grep -E "([0-9]{1,3}.){3}.[0-9]{1,3}" | awk '{print $3,"\t",$2}' >>/etc/hosts
 
 else
 
@@ -61,5 +61,5 @@ else
   echo -e "$LINE_BREAK"
 fi
 
-cat $BASE_PATH/boot_hosts | grep -E "([0-9]{1,3}.){3}.[0-9]{1,3}" | awk '{print $3,"\t",$2}' >$BASE_PATH/ansible/roles/deployment-bootstrap/templates/hosts.j2
+cat $BASE_PATH/deploy_hosts | grep -E "([0-9]{1,3}.){3}.[0-9]{1,3}" | awk '{print $3,"\t",$2}' >$BASE_PATH/ansible/roles/deployment-bootstrap/templates/hosts.j2
 

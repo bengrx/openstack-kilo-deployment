@@ -52,9 +52,9 @@ function generatePassword
     echo -e "$1$3=\t$(openssl rand -hex 10)">>$OUTPUT_HOSTS
 }
 
-if [ ! -f "$BASE_PATH/boot_hosts" ];then
+if [ ! -f "$BASE_PATH/deploy_hosts" ];then
 
-  echo -e "# MAC Address\t\tHostname\t\tIP Address\naa:aa:aa:aa:aa:aa\topenstack-ctl-01\t192.168.10.50\nbb:bb:bb:bb:bb:bb\topenstack-cpu-01\t192.168.10.100\ncc:cc:cc:cc:cc:cc\topenstack-net-01\t192.168.10.150">"$BASE_PATH/boot_hosts"
+  echo -e "# MAC Address\t\tHostname\t\tIP Address\naa:aa:aa:aa:aa:aa\topenstack-ctl-01\t192.168.10.50\nbb:bb:bb:bb:bb:bb\topenstack-cpu-01\t192.168.10.100\ncc:cc:cc:cc:cc:cc\topenstack-net-01\t192.168.10.150">"$BASE_PATH/deploy_hosts"
 fi
 
 if [ ! -f "$BASE_PATH/authorized_keys" ] && [ -f "/home/$(whoami)/.ssh/id_rsa.pub" ];then
@@ -71,16 +71,16 @@ do
 
   if [ $role == "openstack-ctl-master" ];then
 
-    ctl_master=$(cat $BASE_PATH/boot_hosts | grep $(echo $role | sed 's/-master//g' ) | awk '{print $3}' | head -n 1)
+    ctl_master=$(cat $BASE_PATH/deploy_hosts | grep $(echo $role | sed 's/-master//g' ) | awk '{print $3}' | head -n 1)
     echo -e "$ctl_master" >>$OUTPUT_HOSTS
 
   elif [ $role == "openstack-ctl-slave" ];then
 
-    cat $BASE_PATH/boot_hosts | grep $(echo $role | sed 's/-slave//g' ) | awk '{print $3}' | tail -n +2>>$OUTPUT_HOSTS
+    cat $BASE_PATH/deploy_hosts | grep $(echo $role | sed 's/-slave//g' ) | awk '{print $3}' | tail -n +2>>$OUTPUT_HOSTS
 
   else
 
-    cat $BASE_PATH/boot_hosts | grep $(echo $role) | awk '{print $3}'>>$OUTPUT_HOSTS
+    cat $BASE_PATH/deploy_hosts | grep $(echo $role) | awk '{print $3}'>>$OUTPUT_HOSTS
   fi
 done
 
