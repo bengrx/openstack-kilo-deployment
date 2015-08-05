@@ -1,0 +1,7 @@
+---
+
+- include: common-pre-actions.yml
+- include: database.yml
+- include: high-availability.yml
+- include: keystone.yml
+- include: glance.yml

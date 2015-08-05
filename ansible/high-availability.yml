@@ -1,12 +1,10 @@
-- hosts: openstack-ctl-slave-nodes
+---
 
+- hosts: openstack-ctl-nodes
+
+  gather_facts: True
   sudo: yes
-
-  vars:
 
   roles:
 
-#    - ceilometer-ctl
-
-
-
+    - pacemaker
