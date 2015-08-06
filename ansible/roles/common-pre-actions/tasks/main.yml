@@ -20,6 +20,13 @@
    shell: echo server {{ openstack_ctl_master }} iburst > /etc/ntp.conf
    sudo: yes
 
+ - name: Get the real hostname of the node
+   shell: hostname -s
+   register: real_hostname
+
+ - name: Ensure that the hostname is set in /etc/hosts for loopback interface
+   lineinfile: line='127.0.0.1 localhost {{ real_hostname.stdout }}' regexp='127.0.0.1.*localhost' dest=/etc/hosts
+
  - name: Restart the networking service
    shell: ifdown {{ net_man_dev }} && ifup {{ net_man_dev }}
    sudo: yes

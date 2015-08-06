@@ -24,11 +24,12 @@
  - name: Copy the templated my.cnf file
    template: src=my.cnf dest=/etc/mysql/my.cnf
 
- - name: Restart the mysql service
-   shell: service mysql restart
-
  - name: Execute the mysql_secure_installation_silent script
    script: mysql_secure_installation_silent
+   sudo: yes
+
+ - name: Restart the mysql service
+   shell: service mysql restart
 
  - name: Add the openstack user to rabbit
    shell: rabbitmqctl add_user openstack {{ rabbit_pass }}; sleep 1
