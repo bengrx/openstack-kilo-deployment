@@ -3,7 +3,7 @@ LINE_BREAK="--------------------------------------------------------------------
 BASE_PATH="$(dirname $0)"
 
 echo "$LINE_BREAK"
-read -p "Are you sure you want to reset the all local configuration paramters? [Y/n]?: " input 
+read -p "Are you sure you want to reset the all local configuration paramters? [Y/N]?: " input 
 echo -e "$LINE_BREAK"
 
 if [ "$input" == "y" ] || [ "$input" == "Y" ];then
