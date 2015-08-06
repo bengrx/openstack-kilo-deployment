@@ -78,8 +78,17 @@ do
 
     cat $BASE_PATH/deploy_hosts | grep $(echo $role | sed 's/-slave//g' ) | awk '{print $3}' | tail -n +2>>$OUTPUT_HOSTS
 
-  else
+    if [ ! -z $ctl_master ] && [ -z $ctl_slave_a ];then
 
+      ctl_slave_a=$(cat $BASE_PATH/deploy_hosts | grep $(echo $role | sed 's/-slave//g' ) | awk '{print $3}' | head -n 2 | tail -n 1)
+    fi
+
+    if [ ! -z $ctl_slave_a ] && [ -z $ctl_slave_b ];then
+
+      ctl_slave_b=$(cat $BASE_PATH/deploy_hosts | grep $(echo $role | sed 's/-slave//g' ) | awk '{print $3}' | head -n 3 | tail -n 1)
+    fi
+
+  else
     cat $BASE_PATH/deploy_hosts | grep $(echo $role) | awk '{print $3}'>>$OUTPUT_HOSTS
   fi
 done
@@ -87,6 +96,9 @@ done
 # Generate the aggreagte group
 echo -e "\n[openstack-all-nodes:children]\nopenstack-ctl-master-nodes\nopenstack-ctl-slave-nodes\nopenstack-cpu-nodes\nopenstack-net-nodes">>$OUTPUT_HOSTS
 echo -e "\n[openstack-all-nodes:vars]\nopenstack_ctl_master\t\t=\t$ctl_master">>$OUTPUT_HOSTS
+
+# Add controller slave variables to ansible hosts file
+echo -e "openstack_ctl_slave_a\t\t=\t$ctl_slave_a\nopenstack_ctl_slave_b\t\t=\t$ctl_slave_b">>$OUTPUT_HOSTS
 export GREP_COLOR="01;32"
 echo -e "$LINE_BREAK"
 echo -e "Set General OpenStack Deployment Configuration" | grep -E ".*" --color=auto

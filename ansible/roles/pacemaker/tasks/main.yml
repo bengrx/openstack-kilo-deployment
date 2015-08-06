@@ -10,3 +10,8 @@
    - corosync
    - cluster-glue
    - resource-agents
+   - crmsh
+   - libvotequorum6
+
+ - name: Copy the templated corosysc.conf file
+   template: src=corosync.j2 dest=/etc/corosync/corosync.conf mode=644 owner=root group=root
