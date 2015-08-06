@@ -1,6 +1,6 @@
 ---
 
-- hosts: openstack-ctl-nodes
+- hosts: openstack-ctl-master-nodes:openstack-ctl-slave-nodes
 
   gather_facts: True
   sudo: yes
