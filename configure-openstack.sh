@@ -54,7 +54,8 @@ function generatePassword
 
 if [ ! -f "$BASE_PATH/deploy_hosts" ];then
 
-  echo -e "# MAC Address\t\tHostname\t\tIP Address\naa:aa:aa:aa:aa:aa\topenstack-ctl-01\t192.168.10.50\nbb:bb:bb:bb:bb:bb\topenstack-cpu-01\t192.168.10.100\ncc:cc:cc:cc:cc:cc\topenstack-net-01\t192.168.10.150">"$BASE_PATH/deploy_hosts"
+  # echo -e "# MAC Address\t\tHostname\t\tIP Address\naa:aa:aa:aa:aa:aa\topenstack-ctl-01\t192.168.10.50\nbb:bb:bb:bb:bb:bb\topenstack-cpu-01\t192.168.10.100\ncc:cc:cc:cc:cc:cc\topenstack-net-01\t192.168.10.150">"$BASE_PATH/deploy_hosts"
+  echo -e "# MAC Address\t\tHostname\t\tIP Address\n00:00:00:00:00:00\topenstack-ctl-01\t192.168.100.76\n00:00:00:00:00:00\topenstack-ctl-02\t192.168.100.77\n00:00:00:00:00:00\topenstack-ctl-03\t192.168.100.78\n00:00:00:00:00:00\topenstack-net-01\t192.168.100.79\n00:00:00:00:00:00\topenstack-cpu-01\t192.168.100.80\n00:00:00:00:00:00\topenstack-cpu-02\t192.168.100.81" >"$BASE_PATH/deploy_hosts"
 fi
 
 if [ ! -f "$BASE_PATH/authorized_keys" ] && [ -f "/home/$(whoami)/.ssh/id_rsa.pub" ];then
