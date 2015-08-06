@@ -2,7 +2,7 @@
 
 if [ -z $1 ];then
 
-  echo -e "First argument must specify deployment type [ minimal | ha | full ]"
+  echo -e "First argument must specify deployment type [ minimal | ha | full | test ]"
   exit 2
 fi
 
