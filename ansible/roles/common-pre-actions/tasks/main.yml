@@ -34,7 +34,7 @@
  - name: Delay for 3 seconds to give network services a chance to start
    shell: sleep 3
 
- - name: Restart the ntp server
+ - name: Restart the ntp service
    shell: service ntp restart
    sudo: yes
 
