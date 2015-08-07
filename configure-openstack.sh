@@ -54,7 +54,7 @@ function generatePassword
 
 if [ ! -f "$BASE_PATH/deploy_hosts" ];then
 
-  echo -e "# MAC Address\t\tHostname\t\tIP Address\n00:00:00:00:00:00\topenstack-ctl-01\t192.168.100.76\n00:00:00:00:00:00\topenstack-ctl-02\t192.168.100.77\n00:00:00:00:00:00\topenstack-ctl-03\t192.168.100.78\n00:00:00:00:00:00\topenstack-net-01\t192.168.100.79\n00:00:00:00:00:00\topenstack-cpu-01\t192.168.100.80\n00:00:00:00:00:00\topenstack-cpu-02\t192.168.100.81" >"$BASE_PATH/deploy_hosts"
+  echo -e "# MAC Address\t\tHostname\t\tIP Address\n00:00:00:00:00:00\topenstack-ctl-01\t192.168.100.76\n00:00:00:00:00:00\topenstack-ctl-02\t192.168.100.77\n00:00:00:00:00:00\topenstack-net-01\t192.168.100.79\n00:00:00:00:00:00\topenstack-cpu-01\t192.168.100.80\n00:00:00:00:00:00\topenstack-cpu-02\t192.168.100.81" >"$BASE_PATH/deploy_hosts"
   echo -e "$LINE_BREAK\nPlease populate file \"deploy_hosts\"\n$LINE_BREAK"
   exit 0
 fi
@@ -66,41 +66,42 @@ fi
 
 echo -e "[deployment-node]\n127.0.0.1">$OUTPUT_HOSTS
 
-for role in "openstack-ctl-master" "openstack-cpu" "openstack-net" "openstack-ctl-slave"
+for role in "openstack-ctl-master" "openstack-ctl-slave" "openstack-net" "openstack-cpu"
 
 do
-  echo -e "\n[$role-nodes]">>$OUTPUT_HOSTS
 
   if [ $role == "openstack-ctl-master" ];then
 
+    echo -e "\n[$role-node]">>$OUTPUT_HOSTS
     ctl_master=$(cat $BASE_PATH/deploy_hosts | grep $(echo $role | sed 's/-master//g' ) | awk '{print $3}' | head -n 1)
     echo -e "$ctl_master" >>$OUTPUT_HOSTS
 
   elif [ $role == "openstack-ctl-slave" ];then
 
-    cat $BASE_PATH/deploy_hosts | grep $(echo $role | sed 's/-slave//g' ) | awk '{print $3}' | tail -n +2>>$OUTPUT_HOSTS
+    if [ ! -z $ctl_master ] && [ -z $ctl_slave ];then
 
-    if [ ! -z $ctl_master ] && [ -z $ctl_slave_a ];then
-
-      ctl_slave_a=$(cat $BASE_PATH/deploy_hosts | grep $(echo $role | sed 's/-slave//g' ) | awk '{print $3}' | head -n 2 | tail -n 1)
+      echo -e "\n[$role-node]">>$OUTPUT_HOSTS
+      ctl_slave=$(cat $BASE_PATH/deploy_hosts | grep $(echo $role | sed 's/-slave//g' ) | awk '{print $3}' | head -n 2 | tail -n 1)
+      echo -e "$ctl_slave" >>$OUTPUT_HOSTS
+#      cat $BASE_PATH/deploy_hosts | grep $(echo $role | sed 's/-slave//g' ) | awk '{print $3}' | tail -n +2>>$OUTPUT_HOSTS
     fi
 
-    if [ ! -z $ctl_slave_a ] && [ -z $ctl_slave_b ];then
+  elif [ $role == "openstack-net" ];then
 
-      ctl_slave_b=$(cat $BASE_PATH/deploy_hosts | grep $(echo $role | sed 's/-slave//g' ) | awk '{print $3}' | head -n 3 | tail -n 1)
-    fi
+    echo -e "\n[$role-node]">>$OUTPUT_HOSTS
+    cat $BASE_PATH/deploy_hosts | grep $(echo $role) | awk '{print $3}'>>$OUTPUT_HOSTS
 
   else
+    echo -e "\n[$role-nodes]">>$OUTPUT_HOSTS
     cat $BASE_PATH/deploy_hosts | grep $(echo $role) | awk '{print $3}'>>$OUTPUT_HOSTS
   fi
 done
 
 # Generate the aggreagte group
-echo -e "\n[openstack-all-nodes:children]\nopenstack-ctl-master-nodes\nopenstack-ctl-slave-nodes\nopenstack-cpu-nodes\nopenstack-net-nodes">>$OUTPUT_HOSTS
-echo -e "\n[openstack-all-nodes:vars]\nopenstack_ctl_master\t\t=\t$ctl_master">>$OUTPUT_HOSTS
+echo -e "\n[openstack-all-nodes:children]\nopenstack-ctl-master-node\nopenstack-ctl-slave-node\nopenstack-net-node\nopenstack-cpu-nodes\n">>$OUTPUT_HOSTS
+echo -e "\n[openstack-all-nodes:vars]\nopenstack_ctl_master\t\t=\t$ctl_master\nopenstack_ctl_slave\t\t=\t$ctl_slave">>$OUTPUT_HOSTS
+echo -e "corosync_network_address\t=\t$(echo $ctl_master | sed 's/.[0-9]*$/.0/g')" >>$OUTPUT_HOSTS
 
-# Add controller slave variables to ansible hosts file
-echo -e "openstack_ctl_slave_a\t\t=\t$ctl_slave_a\nopenstack_ctl_slave_b\t\t=\t$ctl_slave_b">>$OUTPUT_HOSTS
 export GREP_COLOR="01;32"
 echo -e "$LINE_BREAK"
 echo -e "Set General OpenStack Deployment Configuration" | grep -E ".*" --color=auto

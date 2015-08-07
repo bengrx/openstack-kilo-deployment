@@ -1,6 +1,6 @@
 ---
 
-- hosts: openstack-ctl-master-nodes
+- hosts: openstack-ctl-master-node
 
   sudo: yes
 

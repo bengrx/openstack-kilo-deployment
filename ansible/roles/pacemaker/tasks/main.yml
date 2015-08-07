@@ -10,8 +10,23 @@
    - corosync
    - cluster-glue
    - resource-agents
-   - crmsh
    - libvotequorum6
 
  - name: Copy the templated corosysc.conf file
-   template: src=corosync.j2 dest=/etc/corosync/corosync.conf mode=644 owner=root group=root
+   template: src=corosync.j2 dest={{ item }}/corosync.conf mode=644 owner=root group=root
+   with_items:
+   - /etc/default
+   - /etc/corosync
+
+ - name: Configure corosync to auto load on boot
+   shell: echo "START=yes" > /etc/default/corosync
+
+ - name: Ensure logging directory exists
+   shell: mkdir -p /var/log/cluster/
+
+ - name: Restart the corosync service
+   service: name={{ item }} state=restarted
+   with_items:
+   - corosync
+   - pacemaker
+
