@@ -108,6 +108,7 @@ echo -e "Set General OpenStack Deployment Configuration" | grep -E ".*" --color=
 export GREP_COLOR="01;33"
 
 # Get basic deployment vars
+getValue ctl_vip 192.168.100.100 "\t\t\t\t"
 getValue net_man_dev eth0 "\t\t\t"
 getValue net_stg_dev eth1 "\t\t\t"
 getValue net_tun_dev eth2 "\t\t\t"

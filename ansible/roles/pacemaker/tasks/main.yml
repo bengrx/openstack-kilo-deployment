@@ -94,6 +94,25 @@
  - name: Copy the templated DRBD resource configuration for mysql data dir
    template: src=mysql.res.j2 dest=/etc/drbd.d/mysql.res
 
+ - name: Copy the templated apparmor profile
+   template: src=usr.sbin.mysqld.j2 dest=/etc/apparmor.d/usr.sbin.mysqld
+
+ - name: restart the node
+   command: shutdown -r now "Ansible updates triggered"
+   async: 0
+   poll: 0
+   ignore_errors: true
+
+ - name: waiting for node to come back online
+   delegate_to: 127.0.0.1
+   wait_for: host={{ inventory_hostname }}
+             state=started
+             port=22
+             delay=15
+             timeout=300
+             connect_timeout=15
+   sudo: false
+
  - name: Configure mysql for use with DRBD
    shell: drbdadm {{ item }}
    with_items:
@@ -114,9 +133,11 @@
  - name: Mount the new xfs filesystem on drbd0 and initialise it
    shell: "{{ item }}"
    with_items:
-   - mkdir /mnt; sleep 1
+   - mkdir /mnt; chmod -R 755 /mnt; sleep 1
+   - chown -R mysql:mysql /mnt/
    - mount /dev/drbd/by-res/mysql/0 /mnt; sleep 1
-   - mysql_install_db --datadir=/mnt
+   #- mysql_install_db --datadir=/mnt
+   - mv /var/lib/mysql* /mnt; sleep 1
    - umount /mnt; sleep 1
    delegate_to: "{{ openstack_ctl_master }}"
    run_once: yes
@@ -124,3 +145,12 @@
  - name: Set the mysql drbd device back to secondary
    shell: drbdadm secondary mysql
    delegate_to: "{{ openstack_ctl_master }}"
+
+ - name: Restart the corosync service
+   service: name={{ item }} state=restarted
+   with_items:
+   - corosync
+   - pacemaker
+
+ - name: Add mysql resource to pacemaker
+   script: configure-mysql-pacemaker.sh "{{ ctl_vip }}"
