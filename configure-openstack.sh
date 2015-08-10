@@ -116,6 +116,7 @@ getValue openstack_region test "\t\t"
 getValue default_email_address user@domain.com "\t\t"
 getValue default_ntp_server 0.uk.pool.ntp.org "\t\t"
 getValue cinder_storage_device sdb "\t\t"
+getValue mysql_storage_device sdc "\t\t"
 export GREP_COLOR="01;32"
 echo -e "$LINE_BREAK"
 echo -e "Seting Up OpenStack Authentication Tokens" | grep -E ".*" --color=auto

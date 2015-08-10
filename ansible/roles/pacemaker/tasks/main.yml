@@ -1,7 +1,5 @@
 ---
 
-# pacemaker (Note that the crm shell should be downloaded separately.)
-
  - name: Installed required packages for pacemaker
    apt: pkg={{ item }} state=installed
    with_items:
@@ -11,6 +9,8 @@
    - cluster-glue
    - resource-agents
    - libvotequorum6
+   - drbd8-utils
+   - lvm2
 
  - name: Copy the templated corosysc.conf file
    template: src=corosync.j2 dest={{ item }}/corosync.conf mode=644 owner=root group=root
@@ -30,3 +30,60 @@
    - corosync
    - pacemaker
 
+ - name: Delay for 15 seconds to allow the cluster to come up
+   shell: sleep 15
+   run_once: yes
+
+ - name: Check health status of primary corosync ring
+   shell: corosync-cfgtool -s | grep "ring 0 active with no faults" | wc -l
+   register: corosync_ring_health
+   failed_when: "{{ corosync_ring_health.stdout }} != 1"
+
+ - name: Check health status of corosync node sync
+   shell: corosync-cmapctl runtime.totem.pg.mrp.srp.members | grep "members.[1-2].join_count" | wc -l
+   register: corosync_active_nodes
+   failed_when: "{{ corosync_active_nodes.stdout }} != 2"
+
+ - name: Check health status of pacemaker cluster
+   shell: crm_mon -s | grep "Ok" | grep "[2-3] nodes online" 
+   register: pacemaker_cluster_status
+
+ - fail: msg="{{ pacemaker_cluster_status.stdout }}"
+   when: pacemaker_cluster_status.stdout.find('Ok') == -1
+
+ - name: Setting cluster properties
+   shell: crm configure property {{ item }}
+   with_items:
+   - no-quorum-policy="ignore"
+   - pe-warn-series-max="1000"
+   - pe-input-series-max="1000"
+   - pe-error-series-max="1000"
+   - cluster-recheck-interval="5min"
+
+ - name: Commit the cluster properties
+   shell: crm configure commit
+
+ - name: Get the masters real hostname
+   shell: hostname -s
+   delegate_to: openstack_ctl_master
+   register: hostname_master
+   run_once: yes
+   
+ - name: Get the slaves hostname
+   shell: hostname -s
+   delegate_to: openstack_ctl_slave
+   register: hostname_slave
+   run_once: yes
+
+ - name: Copy the templated DRBD resource configuration for mysql data dir
+   template: src=mysql.res.j2 dest=/etc/drbd.d/mysql.res
+
+ - name: Configure mysql for use with DRBD
+   shell: drbdadm {{ item }}
+   with_items:
+   - create-md mysql
+   - up mysql
+
+ - name: Force mysql device into R/W mode on master
+   shell: drbdadm -- --force primary mysql
+   delegate_to: openstack_ctl_master

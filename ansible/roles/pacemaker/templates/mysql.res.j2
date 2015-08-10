@@ -1,0 +1,11 @@
+resource mysql {
+  device    minor 0;
+  disk      "{{ mysql_storage_device }}";
+  meta-disk internal;
+  on {{ hostname_master }} {
+    address ipv4 {{ openstack_ctl_master }}:7700;
+  }
+  on {{ hostname_slave }} {
+    address ipv4 {{ openstack_ctl_slave }}:7700;
+  }
+}
