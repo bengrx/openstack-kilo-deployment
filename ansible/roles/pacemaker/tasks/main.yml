@@ -1,6 +1,6 @@
 ---
 
- - name: Installed required packages for pacemaker
+ - name: Installed required packages for HA deployment
    apt: pkg={{ item }} state=installed
    with_items:
    - pacemaker
@@ -10,7 +10,23 @@
    - resource-agents
    - libvotequorum6
    - drbd8-utils
+   - xfsprogs
+   - python-mysqldb
+   - mysql-server
    - lvm2
+
+ - name: Ensure mysql is not started
+   service: name=mysql state=stopped
+
+ - name: Populate the answers needed for mysql installation
+   shell: "{{ item }}"
+   with_items:
+   - echo mysql-server mysql-server/root_password select {{ keystone_admin_pass }} | debconf-set-selections
+   - echo mysql-server mysql-server/root_password_again select {{ keystone_admin_pass }} | debconf-set-selections
+
+ - name: Install the package linux-server if this is a virtual host
+   apt: pkg=linux-server state=installed
+   when: mysql_storage_device.find('vd') != -1
 
  - name: Copy the templated corosysc.conf file
    template: src=corosync.j2 dest={{ item }}/corosync.conf mode=644 owner=root group=root
@@ -65,13 +81,13 @@
 
  - name: Get the masters real hostname
    shell: hostname -s
-   delegate_to: openstack_ctl_master
+   delegate_to: "{{ openstack_ctl_master }}"
    register: hostname_master
    run_once: yes
    
  - name: Get the slaves hostname
    shell: hostname -s
-   delegate_to: openstack_ctl_slave
+   delegate_to: "{{ openstack_ctl_slave }}"
    register: hostname_slave
    run_once: yes
 
@@ -81,9 +97,30 @@
  - name: Configure mysql for use with DRBD
    shell: drbdadm {{ item }}
    with_items:
-   - create-md mysql
-   - up mysql
+   - create-md mysql; sleep 1
+   - up mysql; sleep 1
 
- - name: Force mysql device into R/W mode on master
+ - name: Force mysql drbd device into R/W mode on master
    shell: drbdadm -- --force primary mysql
-   delegate_to: openstack_ctl_master
+   delegate_to: "{{ openstack_ctl_master }}"
+
+ - name: Ensure the area for new filesystem is not mounted
+   shell: umount /mnt; sleep 1
+
+ - name: Create a new filesystem on /dev/drbd0 device on the master
+   shell: mkfs -t xfs -f /dev/drbd0
+   delegate_to: "{{ openstack_ctl_master }}"
+
+ - name: Mount the new xfs filesystem on drbd0 and initialise it
+   shell: "{{ item }}"
+   with_items:
+   - mkdir /mnt; sleep 1
+   - mount /dev/drbd/by-res/mysql/0 /mnt; sleep 1
+   - mysql_install_db --datadir=/mnt
+   - umount /mnt; sleep 1
+   delegate_to: "{{ openstack_ctl_master }}"
+   run_once: yes
+
+ - name: Set the mysql drbd device back to secondary
+   shell: drbdadm secondary mysql
+   delegate_to: "{{ openstack_ctl_master }}"

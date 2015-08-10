@@ -2,4 +2,4 @@ hosts*
 deploy_hosts
 ansible.cfg
 authorized_keys.*
-
+.hosts

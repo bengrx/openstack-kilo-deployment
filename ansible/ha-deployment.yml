@@ -1,8 +1,8 @@
 ---
 
 - include: common-pre-actions.yml
-- include: database.yml
 - include: high-availability.yml
+- include: database.yml
 - include: keystone.yml
 - include: glance.yml
 - include: nova-cpu.yml

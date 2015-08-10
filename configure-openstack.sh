@@ -115,8 +115,8 @@ getValue net_ext_dev eth3 "\t\t\t"
 getValue openstack_region test "\t\t"
 getValue default_email_address user@domain.com "\t\t"
 getValue default_ntp_server 0.uk.pool.ntp.org "\t\t"
-getValue cinder_storage_device sdb "\t\t"
-getValue mysql_storage_device sdc "\t\t"
+getValue cinder_storage_device vdb "\t\t"
+getValue mysql_storage_device vdc "\t\t"
 export GREP_COLOR="01;32"
 echo -e "$LINE_BREAK"
 echo -e "Seting Up OpenStack Authentication Tokens" | grep -E ".*" --color=auto
@@ -178,6 +178,8 @@ if [ -f "$BASE_PATH/authorized_keys" ];then
 
   cp "$BASE_PATH/authorized_keys" "$BASE_PATH/ansible/roles/deployment-bootstrap/templates/authorized_keys.j2" 2>&1>/dev/null
 fi
+
+cat $BASE_PATH/deploy_hosts | grep -v "^#" | grep -E "([0-9].){1,3}[0-9]{1,3}" | awk '{print $3," ",$2}' > $BASE_PATH/.hosts
 
 cat ~/.ssh/id_rsa.pub>>~/.ssh/authorized_keys
 echo -e "Host *\n  StrictHostKeyChecking no\n  UserKnownHostsFile /dev/null\n  LogLevel ERROR">~/.ssh/config
