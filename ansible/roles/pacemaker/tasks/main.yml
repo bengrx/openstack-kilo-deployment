@@ -79,6 +79,9 @@
  - name: Commit the cluster properties
    shell: crm configure commit
 
+ - name: Instruct corosync to load quorum and messaging interfaces needed by pacemaker
+   template: src=pcmk.j2 dest=pcmk
+
  - name: Get the masters real hostname
    shell: hostname -s
    delegate_to: "{{ openstack_ctl_master }}"
