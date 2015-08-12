@@ -80,7 +80,7 @@
    shell: crm configure commit
 
  - name: Instruct corosync to load quorum and messaging interfaces needed by pacemaker
-   template: src=pcmk.j2 dest=pcmk
+   template: src=pcmk.j2 dest=/etc/corosync/service.d/pcmk
 
  - name: Get the masters real hostname
    shell: hostname -s
@@ -157,3 +157,10 @@
 
  - name: Add mysql resource to pacemaker
    script: configure-mysql-pacemaker.sh "{{ ctl_vip }}"
+
+ - name: Restart pacemaker
+   service: name=pacemaker state=restarted
+
+ - name: Execute update-rc for pacemaker
+   shell: update-rc pacemaker defaults
+
