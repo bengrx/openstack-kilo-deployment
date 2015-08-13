@@ -157,10 +157,11 @@
 
  - name: Add mysql resource to pacemaker
    script: configure-mysql-pacemaker.sh "{{ ctl_vip }}"
+   delegate_to: "{{ openstack_ctl_master }}"
 
  - name: Restart pacemaker
    service: name=pacemaker state=restarted
 
  - name: Execute update-rc for pacemaker
-   shell: update-rc pacemaker defaults
+   shell: update-rc.d pacemaker defaults
 
