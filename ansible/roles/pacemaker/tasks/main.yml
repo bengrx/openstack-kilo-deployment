@@ -155,13 +155,13 @@
    - corosync
    - pacemaker
 
- - name: Add mysql resource to pacemaker
-   script: configure-mysql-pacemaker.sh "{{ ctl_vip }}"
-   delegate_to: "{{ openstack_ctl_master }}"
+# - name: Add mysql resource to pacemaker
+#   script: configure-mysql-pacemaker.sh "{{ ctl_vip }}"
+#   delegate_to: "{{ openstack_ctl_master }}"
 
- - name: Restart pacemaker
-   service: name=pacemaker state=restarted
+# - name: Restart pacemaker
+#   service: name=pacemaker state=restarted
 
- - name: Execute update-rc for pacemaker
-   shell: update-rc.d pacemaker defaults
+# - name: Execute update-rc for pacemaker
+#   shell: update-rc.d pacemaker defaults
 
