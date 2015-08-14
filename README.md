@@ -4,6 +4,8 @@
 
 bcmwl-kernel-source ( Used on network node in my case )
 
+# HA deployment when running on openstack instances
+
 When deploying a HA environment on openstack we need to tell neutron about the special
 port we are going to use for HA. Special firewall rules are applied to the port to stop
 The neutron IP anti-spoofing mechanisms from preventing the node using the address.
@@ -11,7 +13,7 @@ It is also important that the address to be used is outside of the neutron DHCP 
 
 http://blog.aaronorosen.com/implementing-high-availability-instances-with-neutron-using-vrrp/
 
-# Create the port in neutron
+<b>Creating the port in neutron</b>
 
 export network=man-net
 export secugroup=1dca9dca-72a2-48ec-a8c1-6f23f0bbce3c
