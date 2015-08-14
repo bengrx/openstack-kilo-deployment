@@ -4,10 +4,10 @@
 
 bcmwl-kernel-source ( Used on network node in my case )
 
-# When deploying a HA environment on openstack we need to tell neutron about the special
-# port we are going to use for HA. Special firewall rules are applied to the port to stop
-# The neutron IP anti-spoofing mechanisms from preventing the node using the address.
-# It is also important that the address to be used is outside of the neutron DHCP scope
+When deploying a HA environment on openstack we need to tell neutron about the special
+port we are going to use for HA. Special firewall rules are applied to the port to stop
+The neutron IP anti-spoofing mechanisms from preventing the node using the address.
+It is also important that the address to be used is outside of the neutron DHCP scope
 
 http://blog.aaronorosen.com/implementing-high-availability-instances-with-neutron-using-vrrp/
 
