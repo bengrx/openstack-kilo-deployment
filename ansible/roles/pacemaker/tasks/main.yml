@@ -46,14 +46,40 @@
    - corosync
    - pacemaker
 
- - name: Delay for 15 seconds to allow the cluster to come up
-   shell: sleep 15
+ - name: Execute update-rc.d for pacemaker to be enabled on boot
+   shell: update-rc.d pacemaker defaults
+
+ - name: Execute update-rc.d for mysql to be disabled on boot
+   shell: update-rc.d drbd disable
+
+ - name: restart the node
+   command: shutdown -r now "Ansible updates triggered"
+   async: 0
+   poll: 0
+   ignore_errors: true
+
+ - name: waiting for node to come back online
+   delegate_to: 127.0.0.1
+   wait_for: host={{ inventory_hostname }}
+             state=started
+             port=22
+             delay=15
+             timeout=300
+             connect_timeout=15
+   sudo: false
+
+ - name: Delay for 20 seconds to allow the cluster to come up
+   shell: sleep 20
    run_once: yes
 
  - name: Check health status of primary corosync ring
    shell: corosync-cfgtool -s | grep "ring 0 active with no faults" | wc -l
    register: corosync_ring_health
    failed_when: "{{ corosync_ring_health.stdout }} != 1"
+
+ - name: Delay for 20 seconds to allow the cluster to come up
+   shell: sleep 20
+   run_once: yes
 
  - name: Check health status of corosync node sync
    shell: corosync-cmapctl runtime.totem.pg.mrp.srp.members | grep "members.[1-2].join_count" | wc -l
@@ -100,6 +126,9 @@
  - name: Copy the templated apparmor profile
    template: src=usr.sbin.mysqld.j2 dest=/etc/apparmor.d/usr.sbin.mysqld
 
+ - name: Load the drbd kernel module
+   shell: modprobe drbd
+
  - name: restart the node
    command: shutdown -r now "Ansible updates triggered"
    async: 0
@@ -115,6 +144,9 @@
              timeout=300
              connect_timeout=15
    sudo: false
+
+ - name: Start the drbd service
+   service: name=drbd state=started
 
  - name: Configure mysql for use with DRBD
    shell: drbdadm {{ item }}
@@ -145,6 +177,9 @@
    delegate_to: "{{ openstack_ctl_master }}"
    run_once: yes
 
+ - name: Remove the contents of /var/lib/mysql on the slave node
+   shell: service mysql stop; rm -fr /var/lib/mysql/*
+
  - name: Set the mysql drbd device back to secondary
    shell: drbdadm secondary mysql
    delegate_to: "{{ openstack_ctl_master }}"
@@ -155,13 +190,9 @@
    - corosync
    - pacemaker
 
-# - name: Add mysql resource to pacemaker
-#   script: configure-mysql-pacemaker.sh "{{ ctl_vip }}"
-#   delegate_to: "{{ openstack_ctl_master }}"
+ - name: Add mysql resource to pacemaker
+   script: configure-mysql-pacemaker.sh "{{ ctl_vip }}"
+   delegate_to: "{{ openstack_ctl_master }}"
 
 # - name: Restart pacemaker
 #   service: name=pacemaker state=restarted
-
-# - name: Execute update-rc for pacemaker
-#   shell: update-rc.d pacemaker defaults
-
