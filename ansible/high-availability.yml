@@ -6,5 +6,5 @@
 
   roles:
 
-    - pacemaker
-
+#    - pacemaker
+    - ha
