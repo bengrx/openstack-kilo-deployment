@@ -103,6 +103,14 @@
  - name: Copy the templated apparmor profile
    template: src=usr.sbin.mysqld.j2 dest=/etc/apparmor.d/usr.sbin.mysqld
 
+ - name: Enable services at boot
+   service: name={{ item }} enabled=yes
+   with_items:
+   - corosync
+   - pacemaker
+   - drbd
+   - mysql
+
  - name: restart the node
    command: shutdown -r now "Ansible updates triggered"
    async: 0
@@ -122,21 +130,13 @@
  - name: Load the drbd kernel module
    shell: modprobe drbd
 
- - name: Start the drbd service
-   service: name=drbd state=stopped
-
- - name: Format the backing device used by Mysql / DRBD
-   shell: echo -e "o\nn\np\n1\n\n\nw" | fdisk /dev/{{ cinder_storage_device }}
-
- - name: Start the drbd service
-   service: name=drbd state=started
-
  - name: Configure mysql for use with DRBD
    shell: drbdadm {{ item }}
    with_items:
    - create-md mysql; sleep 1
    - up mysql; sleep 1
    delegate_to: "{{ openstack_ctl_master }}"
+   run_once: yes
 
  - name: Force mysql drbd service in to secondary on both nodes to prevent writes
    shell: drbdadm secondary mysql
@@ -144,46 +144,62 @@
  - name: Force mysql drbd device into R/W mode on master
    shell: drbdadm primary mysql
    delegate_to: "{{ openstack_ctl_master }}"
+   run_once: yes
 
-# - name: Ensure the area for new filesystem is not mounted
-#   shell: umount /mnt; sleep 1
-#
-# - name: Create a new filesystem on /dev/drbd0 device on the master
-#   shell: mkfs -t xfs -f /dev/drbd0
-#   delegate_to: "{{ openstack_ctl_master }}"
-#
-# - name: Revert drbd mysql device back to secondary on master
-#   shell: drbdadm secondary mysql
-#   delegate_to: "{{ openstack_ctl_master }}"
-#
-## - name: Mount the new xfs filesystem on drbd0 and initialise it
-##   shell: "{{ item }}"
-##   with_items:
-##   - mkdir /mnt; chmod -R 755 /mnt; sleep 1
-##   - chown -R mysql:mysql /mnt/
-##   - mount /dev/drbd/by-res/mysql/0 /mnt; sleep 1
-##   #- mysql_install_db --datadir=/mnt
-##   - mv /var/lib/mysql* /mnt; sleep 1
-##   - umount /mnt; sleep 1
-##   delegate_to: "{{ openstack_ctl_master }}"
-##   run_once: yes
-##
-## - name: Remove the contents of /var/lib/mysql on the slave node
-##   shell: service mysql stop; rm -fr /var/lib/mysql/*
-##
-## - name: Set the mysql drbd device back to secondary
-##   shell: drbdadm secondary mysql
-##   delegate_to: "{{ openstack_ctl_master }}"
-##
-## - name: Restart the corosync service
-##   service: name={{ item }} state=restarted
-##   with_items:
-##   - corosync
-##   - pacemaker
-##
-## - name: Add mysql resource to pacemaker
-##   script: configure-mysql-pacemaker.sh "{{ ctl_vip }}"
-##   delegate_to: "{{ openstack_ctl_master }}"
-##
-### - name: Restart pacemaker
-###   service: name=pacemaker state=restarted
+ - name: Ensure the area for new filesystem is not mounted
+   shell: umount /var/lib/mysql; sleep 1
+
+ - name: Format the backing device used by Mysql / DRBD
+   shell: echo -e "o\nn\np\n1\n\n\nw" | fdisk /dev/{{ mysql_storage_device }}
+
+ - name: Create a new filesystem on /dev/drbd0 device on the master
+   shell: mkfs -t xfs -f /dev/drbd0
+   delegate_to: "{{ openstack_ctl_master }}"
+   run_once: yes
+
+ - name: Revert drbd mysql device back to secondary on master
+   shell: drbdadm secondary mysql
+   delegate_to: "{{ openstack_ctl_master }}"
+   run_once: yes
+
+ - name: Copy the templated my.cnf
+   template: src=my.j2 dest=/etc/mysql/my.cnf
+
+ - name: Mount the new xfs filesystem on drbd0 and initialise it
+   shell: "{{ item }}"
+   with_items:
+   - drbdadm primary mysql
+   - cp -r /var/lib/mysql/ /tmp/mysql/
+   - mount /dev/drbd/by-res/mysql/0 /var/lib/mysql; sleep 1
+   - cp -r /tmp/mysql/ /var/lib/mysql/
+   - mysql_install_db --user=mysql
+   - /etc/init.d/mysql stop; sleep 1
+   - umount /var/lib/mysql; sleep 1
+   delegate_to: "{{ openstack_ctl_slave }}"
+   run_once: yes
+
+# - name: Remove the contents of /var/lib/mysql on the slave node
+#   shell: service mysql stop; rm -fr /var/lib/mysql/*
+
+
+ - name: Set the mysql drbd device back to secondary on node 2
+   shell: drbdadm secondary mysql
+   delegate_to: "{{ openstack_ctl_slave }}"
+   run_once: yes
+
+ - name: Set the mysql drbd device back to primary on node 1
+   shell: drbdadm primary mysql
+   delegate_to: "{{ openstack_ctl_master }}"
+   run_once: yes
+
+ - name: Restart the corosync service
+   service: name={{ item }} state=restarted
+   with_items:
+   - corosync
+   - pacemaker
+
+ - name: Add mysql resource to pacemaker
+   script: configure-mysql-pacemaker.sh "{{ ctl_vip }}"
+   delegate_to: "{{ openstack_ctl_master }}"
+   run_once: yes
+

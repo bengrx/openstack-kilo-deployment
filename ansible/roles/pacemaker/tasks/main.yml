@@ -52,6 +52,9 @@
  - name: Execute update-rc.d for mysql to be disabled on boot
    shell: update-rc.d drbd disable
 
+ - name: Set mysql to listen on VIP address
+   lineinfile: line='bind-address = {{ ctl_vip }}' regexp='bind-address =.*$' dest=/etc/mysql/my.cnf
+
  - name: restart the node
    command: shutdown -r now "Ansible updates triggered"
    async: 0
@@ -145,6 +148,9 @@
              connect_timeout=15
    sudo: false
 
+ - name: Load the drbd kernel module
+   shell: modprobe drbd
+
  - name: Start the drbd service
    service: name=drbd state=started
 
@@ -176,9 +182,6 @@
    - umount /mnt; sleep 1
    delegate_to: "{{ openstack_ctl_master }}"
    run_once: yes
-
- - name: Remove the contents of /var/lib/mysql on the slave node
-   shell: service mysql stop; rm -fr /var/lib/mysql/*
 
  - name: Set the mysql drbd device back to secondary
    shell: drbdadm secondary mysql
