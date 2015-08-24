@@ -88,7 +88,7 @@ do
 
   elif [ $role == "openstack-net" ];then
 
-    echo -e "\n[$role-node]">>$OUTPUT_HOSTS
+    echo -e "\n[$role-nodes]">>$OUTPUT_HOSTS
     cat $BASE_PATH/deploy_hosts | grep $(echo $role) | awk '{print $3}'>>$OUTPUT_HOSTS
 
   else
@@ -98,7 +98,7 @@ do
 done
 
 # Generate the aggreagte group
-echo -e "\n[openstack-all-nodes:children]\nopenstack-ctl-master-node\nopenstack-ctl-slave-node\nopenstack-net-node\nopenstack-cpu-nodes\n">>$OUTPUT_HOSTS
+echo -e "\n[openstack-all-nodes:children]\nopenstack-ctl-master-node\nopenstack-ctl-slave-node\nopenstack-net-nodes\nopenstack-cpu-nodes\n">>$OUTPUT_HOSTS
 echo -e "\n[openstack-all-nodes:vars]\nopenstack_ctl_master\t\t=\t$ctl_master\nopenstack_ctl_slave\t\t=\t$ctl_slave">>$OUTPUT_HOSTS
 echo -e "corosync_network_address\t=\t$(echo $ctl_master | sed 's/.[0-9]*$/.0/g')" >>$OUTPUT_HOSTS
 

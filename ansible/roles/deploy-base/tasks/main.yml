@@ -3,8 +3,8 @@
  - name: Copy the /etc/hosts file from local .hosts
    copy: src=../.hosts dest=/etc/hosts
 
- - name: Configure all interfaces
-   script: configure-interfaces.sh
+# - name: Configure all interfaces
+#   script: configure-interfaces.sh
 
  - name: Verify connectivity to all nodes from all nodes
    script: verify-connectivity.sh

@@ -1,5 +1,4 @@
 ---
-
  - include: common-pre-actions.yml
  - include: database.yml
  - include: keystone.yml
