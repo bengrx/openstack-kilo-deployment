@@ -4,6 +4,7 @@
    apt: pkg={{ item }} state=installed
    with_items:
    - pacemaker
+   - rabbitmq-server
    - crmsh
    - corosync
    - cluster-glue
@@ -15,8 +16,13 @@
    - mysql-server
    - lvm2
 
- - name: Ensure mysql is not started
-   service: name=mysql state=stopped
+ - name: Ensure services are not started
+   service: name={{ item }} state=stopped
+   with_items:
+   - mysql
+   - pacemaker 
+   - drbd
+   failed_when: 6 == 9
 
  - name: Populate the answers needed for mysql installation
    shell: "{{ item }}"
@@ -78,9 +84,13 @@
    - pe-input-series-max="1000"
    - pe-error-series-max="1000"
    - cluster-recheck-interval="5min"
+   delegate_to: "{{ openstack_ctl_master }}"
+   run_once: yes
 
  - name: Commit the changes
    shell: crm configure commit
+   delegate_to: "{{ openstack_ctl_master }}"
+   run_once: yes
 
  - name: Instruct corosync to load quorum and messaging interfaces needed by pacemaker
    template: src=pcmk.j2 dest=/etc/corosync/service.d/pcmk
@@ -100,6 +110,9 @@
  - name: Copy the templated DRBD resource configuration for mysql data dir
    template: src=mysql.res.j2 dest=/etc/drbd.d/mysql.res
 
+ - name: Copy the templated DRBD resource configuration for rabbitmq data dir
+   template: src=rabbitmq.res.j2 dest=/etc/drbd.d/rabbitmq.res
+
  - name: Copy the templated apparmor profile
    template: src=usr.sbin.mysqld.j2 dest=/etc/apparmor.d/usr.sbin.mysqld
 
@@ -110,7 +123,7 @@
    - pacemaker
    - drbd
    - mysql
-
+   
  - name: restart the node
    command: shutdown -r now "Ansible updates triggered"
    async: 0
@@ -130,76 +143,125 @@
  - name: Load the drbd kernel module
    shell: modprobe drbd
 
- - name: Configure mysql for use with DRBD
-   shell: drbdadm {{ item }}
+ - name: Ensure that mysql and pacemaker are stopped
+   service: name={{ item }} state=stopped
    with_items:
-   - create-md mysql; sleep 1
-   - up mysql; sleep 1
-   delegate_to: "{{ openstack_ctl_master }}"
-   run_once: yes
+   - pacemaker
+   - mysql
+   failed_when: 6 == 9
 
- - name: Force mysql drbd service in to secondary on both nodes to prevent writes
-   shell: drbdadm secondary mysql
+ - name: Configure mysql for use with DRBD
+   shell: "{{ item }}"
+   with_items:
+   - echo "yes" | drbdadm create-md mysql
+   - drbdadm up mysql
+   - echo "yes" | drbdadm create-md rabbitmq
+   - drbdadm up rabbitmql
+   failed_when: 6 == 9
+
+ - name: Force mysql drbd service in to secondary on second nodes to prevent writes
+   shell: drbdadm secondary "{{ item }}"
+   with_items:
+   - mysql
+   - rabbitmq
+   delegate_to: "{{ openstack_ctl_slave }}"
+   run_once: yes
+   
 
  - name: Force mysql drbd device into R/W mode on master
-   shell: drbdadm primary mysql
+   shell: drbdadm -- --force primary "{{ item }}"
+   with_items:
+   - mysql
+   - rabbitmq
    delegate_to: "{{ openstack_ctl_master }}"
    run_once: yes
 
- - name: Ensure the area for new filesystem is not mounted
-   shell: umount /var/lib/mysql; sleep 1
+ - name: Ensure the areas for new filesystems are not mounted
+   shell: umount /var/lib/ "{{ item }}"
+   with_items:
+   - mysql
+   - rabbitmq
+   failed_when: 6 == 9
 
- - name: Format the backing device used by Mysql / DRBD
+ - name: Format the backing device used by MySQL / DRBD
    shell: echo -e "o\nn\np\n1\n\n\nw" | fdisk /dev/{{ mysql_storage_device }}
+
+ - name: Format the backing device used by RabbitMQ / DRBD
+   shell: echo -e "o\nn\np\n1\n\n\nw" | fdisk /dev/{{ rabbitmq_storage_device }}
 
  - name: Create a new filesystem on /dev/drbd0 device on the master
    shell: mkfs -t xfs -f /dev/drbd0
    delegate_to: "{{ openstack_ctl_master }}"
    run_once: yes
 
- - name: Revert drbd mysql device back to secondary on master
-   shell: drbdadm secondary mysql
+ - name: Create a new filesystem on /dev/drbd1 device on the master
+   shell: mkfs -t xfs -f /dev/drbd1
    delegate_to: "{{ openstack_ctl_master }}"
    run_once: yes
 
  - name: Copy the templated my.cnf
    template: src=my.j2 dest=/etc/mysql/my.cnf
 
- - name: Mount the new xfs filesystem on drbd0 and initialise it
+  - name: Copy the RabbitMQ erlang cookie from the master
+    synchronize: mode=pull src=/var/lib/rabbitmq/.erlang.cookie dest=/var/lib/rabbitmq/.erlang.cookie
+    delegate_to: "{{ openstack_ctl_slave }}"    
+    run_once: yes
+
+ - name: Mount the new xfs filesystems and initialise them
    shell: "{{ item }}"
    with_items:
    - drbdadm primary mysql
    - cp -r /var/lib/mysql/ /tmp/mysql/
-   - mount /dev/drbd/by-res/mysql/0 /var/lib/mysql; sleep 1
+   - mount /dev/drbd/by-res/mysql/0 /var/lib/mysql
    - cp -r /tmp/mysql/ /var/lib/mysql/
    - mysql_install_db --user=mysql
-   - /etc/init.d/mysql stop; sleep 1
-   - umount /var/lib/mysql; sleep 1
-   delegate_to: "{{ openstack_ctl_slave }}"
+   - /etc/init.d/mysql stop
+   - umount /var/lib/mysql
+   - umount /mnt
+   - mount /dev/drbd/by-res/rabbitmq /mnt
+   - cp -a /var/lib/rabbitmq/.erlang.cookie /mnt
+   - umount /mnt
+   delegate_to: "{{ openstack_ctl_master }}"
    run_once: yes
+   failed_when: 6 == 9
 
-# - name: Remove the contents of /var/lib/mysql on the slave node
-#   shell: service mysql stop; rm -fr /var/lib/mysql/*
+# - name: Add mysql resource to pacemaker
+#   script: configure-mysql-pacemaker.sh "{{ ctl_vip }}"
+#   delegate_to: "{{ openstack_ctl_master }}"
+#   run_once: yes
 
-
- - name: Set the mysql drbd device back to secondary on node 2
-   shell: drbdadm secondary mysql
-   delegate_to: "{{ openstack_ctl_slave }}"
-   run_once: yes
-
- - name: Set the mysql drbd device back to primary on node 1
-   shell: drbdadm primary mysql
+ - name: Copy the mysql resource script to the target
+   copy: src=configure-mysql-pacemaker.sh dest=/tmp/configure-mysql-pacemaker.sh
    delegate_to: "{{ openstack_ctl_master }}"
    run_once: yes
 
- - name: Restart the corosync service
+ - name: execute the mysql resource script
+   shell: "{{ item }}"
+   with_items:
+   - chmod +x /tmp/configure-mysql-pacemaker.sh
+   - /tmp/configure-mysql-pacemaker.sh "{{ ctl_vip }}"
+   delegate_to: "{{ openstack_ctl_master }}"
+   run_once: yes
+
+ - name: Start the cluster services
    service: name={{ item }} state=restarted
    with_items:
    - corosync
    - pacemaker
 
- - name: Add mysql resource to pacemaker
-   script: configure-mysql-pacemaker.sh "{{ ctl_vip }}"
-   delegate_to: "{{ openstack_ctl_master }}"
-   run_once: yes
+ - name: restart the node
+   command: shutdown -r now "Ansible updates triggered"
+   async: 0
+   poll: 0
+   ignore_errors: true
+   delegate_to: "{{ openstack_ctl_slave }}"
 
+ - name: waiting for node to come back online
+   delegate_to: 127.0.0.1
+   wait_for: host={{ openstack_ctl_slave }}
+             state=started
+             port=22
+             delay=15
+             timeout=300
+             connect_timeout=15
+   sudo: false
