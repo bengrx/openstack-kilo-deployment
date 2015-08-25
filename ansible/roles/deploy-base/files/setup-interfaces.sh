@@ -26,7 +26,7 @@ echo "Network node address = $network_node"
 
 printf "\n\nauto lo\niface lo inet loopback\n" > /etc/network/interfaces
 add_interface "p4p1" "10.2.133" $network_node "1500" >> /etc/network/interfaces
-printf "\nauto p4p2\niface p4p1 inet manual\n\tup ip link set dev p4p1 up\n\tdown ip link set dev p4p1 down\n" >> /etc/network/interfaces 
+printf "\nauto p4p2\niface p4p2 inet manual\n\tup ip link set dev p4p2 up\n\tdown ip link set dev p4p2 down\n" >> /etc/network/interfaces 
 add_interface "em1" "10.2.135" $network_node "9000" >> /etc/network/interfaces
 add_interface "em2" "10.2.136" $network_node "9000" >> /etc/network/interfaces
 
