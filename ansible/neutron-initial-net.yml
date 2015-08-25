@@ -5,10 +5,10 @@
   sudo: yes
 
   vars:  
-    external_net_cidr: "172.16.8.0/24"
-    floating_ip_start: "172.16.8.100"
-    floating_ip_end: "172.16.8.200"
-    external_net_gw: "172.16.8.1"
+    external_net_cidr: "10.2.134.0/24"
+    floating_ip_start: "10.2.134.1"
+    floating_ip_end: "10.2.134.240"
+    external_net_gw: "10.2.134.254"
     tenant_net_cidr: "192.168.50.0/24"
     tenant_net_gw: "192.168.50.1"
   

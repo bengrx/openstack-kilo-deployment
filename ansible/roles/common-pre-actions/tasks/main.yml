@@ -1,5 +1,8 @@
 ---
 
+ - name: Fix apt if it's in a bad state
+   shell: apt-get update --fix-missing
+
  - name: Update the apt cache
    apt: update_cache=yes
    sudo: yes
@@ -10,6 +13,10 @@
 
  - name: Ensure package git is installed
    apt: pkg=git state=installed
+   sudo: yes
+
+ - name: Ensure curl is installed
+   apt: pkg=curl state=installed
    sudo: yes
 
  - name: Ensure package wget is installed
@@ -48,8 +55,4 @@
 
  - name: Update the apt cache
    apt: update_cache=yes
-   sudo: yes
-
- - name: Upgrade all packages to latest version
-   apt: upgrade=dist
    sudo: yes
