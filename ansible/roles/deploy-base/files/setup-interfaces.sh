@@ -9,7 +9,7 @@ function add_interface ()
         network=$2
         host=$3
 	mtu=$4
-	if [ ! -z $5 ]; then primary_interface=1; fi
+	if [ ! -z $5 ]; then local primary_interface=1; fi
         printf "\nauto $interface\n"
         printf "iface $interface inet static\n"
         printf "\taddress $network.$host\n"
