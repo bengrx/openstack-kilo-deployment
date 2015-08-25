@@ -3,7 +3,6 @@
  - name: Copy the /etc/hosts file from local .hosts
    copy: src=../.hosts dest=/etc/hosts
 
-
 # - name: Configure all interfaces (VM based deploy)
 #   script: configure-interfaces.sh
 
