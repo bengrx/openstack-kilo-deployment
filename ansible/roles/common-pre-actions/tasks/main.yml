@@ -34,9 +34,9 @@
  - name: Ensure that the hostname is set in /etc/hosts for loopback interface
    lineinfile: line='127.0.0.1 localhost {{ real_hostname.stdout }}' regexp='127.0.0.1.*localhost' dest=/etc/hosts
 
- - name: Restart the networking service
-   shell: ifdown {{ net_man_dev }} && ifup {{ net_man_dev }}
-   sudo: yes
+# - name: Restart the networking service
+#   shell: ifdown {{ net_man_dev }} && ifup {{ net_man_dev }}
+#   sudo: yes
 
  - name: Delay for 3 seconds to give network services a chance to start
    shell: sleep 3
