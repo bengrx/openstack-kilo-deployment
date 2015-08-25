@@ -15,7 +15,7 @@ function add_interface ()
         printf "\taddress $network.$host\n"
         printf "\tnetwork $network.0\n"
         printf "\tnetmask 255.255.255.0\n"
-	if [ ! -z primary_interface ]; then 
+	if [ ! -z $primary_interface ]; then 
 		printf "\tgateway $network.254\n"
 		printf "\tdns-nameservers 10.2.1.17 10.2.2.2 10.2.2.3\n"
 		printf "\tdns-search brighton.brandwatch.net brandwatch.net\n"
