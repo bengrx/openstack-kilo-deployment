@@ -30,3 +30,7 @@ printf "\nauto p4p2\niface p4p1 inet manual\n\tup ip link set dev p4p1 up\n\tdow
 add_interface "em1" "10.2.135" $network_node "9000" >> /etc/network/interfaces
 add_interface "em2" "10.2.136" $network_node "9000" >> /etc/network/interfaces
 
+ifup p4p2
+ifup em1
+ifup em2
+
