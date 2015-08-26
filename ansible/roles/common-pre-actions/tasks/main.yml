@@ -34,10 +34,6 @@
  - name: Ensure that the hostname is set in /etc/hosts for loopback interface
    lineinfile: line='127.0.0.1 localhost {{ real_hostname.stdout }}' regexp='127.0.0.1.*localhost' dest=/etc/hosts
 
-# - name: Restart the networking service
-#   shell: ifdown {{ net_man_dev }} && ifup {{ net_man_dev }}
-#   sudo: yes
-
  - name: Delay for 3 seconds to give network services a chance to start
    shell: sleep 3
 
@@ -56,3 +52,56 @@
  - name: Update the apt cache
    apt: update_cache=yes
    sudo: yes
+
+ - name: Create the OpenStack ceph pools on the master node
+   shell: ceph osd pool create "{{ item }}" 128
+   with_items: 
+   - volumes 
+   - images 
+   - backups 
+   - vms 
+   delegate_to: "{{ openstack_ctl_master }}"
+   run_once: yes
+   when: cinder_storage_device == "ceph"
+
+ - name: Create the OpenStack ceph users
+   shell: ceph auth get-or-create "{{ item }}"
+   with_items: 
+   - client.cinder mon 'allow r' osd 'allow class-read object_prefix rbd_children, allow rwx pool=volumes, allow rwx pool=vms, allow rx pool=images'
+   - client.glance mon 'allow r' osd 'allow class-read object_prefix rbd_children, allow rwx pool=images'
+   - client.cinder-backup mon 'allow r' osd 'allow class-read object_prefix rbd_children, allow rwx pool=backups'
+   delegate_to: "{{ openstack_ctl_master }}"
+   run_once: yes
+   when: cinder_storage_device == "ceph"
+
+ - name: Install the keyrings on the ctl master node
+   shell: "{{ item }}"
+   with_items:
+   - ceph auth get-or-create client.glance >/etc/ceph/ceph.client.glance.keyring owner=glance group=glance
+   - ceph auth get-or-create client.cinder >/etc/ceph/ceph.client.cinder.keyring owner=cinder group=cinder
+   - ceph auth get-or-create client.cinder-backup >/etc/ceph/ceph.client.cinder-backup.keyring owner=cinder group=cinder
+   - ceph auth get-or-create client.cinder >/etc/ceph/ceph.client.cinder.keyring owner=cinder group=cinder
+   delegate_to: "{{ openstack_ctl_master }}"
+   run_once: yes
+   when: cinder_storage_device == "ceph"
+
+ - name: Install the nova-compute keyring on computation nodes
+   shell: ceph auth get-or-create client.cinder | ssh {your-nova-compute-server} sudo tee /etc/ceph/ceph.client.cinder.keyring
+
+ - name: Copy the nova-compute keyring to cpu hosts    
+   synchronize: mode=pull src=/etc/ceph/ceph.client.cinder.keyring  dest=/etc/ceph/ceph.client.cinder.keyring
+   delegate_to: "{{ openstack_ctl_master }}"
+   when: cinder_storage_device == "ceph"
+   limit: openstack-cpu-nodes
+
+ - name: Create a temporary copy of the secret key on the nodes running nova-compute
+   shell: ceph auth get-key client.cinder
+   register: cinder_client_secret
+   delegate_to: "{{ openstack_ctl_master }}"
+   run_once: yes
+
+ - name: Copy the secret key to cpu nodes
+   shell: echo "{{ cinder_client_secret.stdout }}">/etc/ceph/client.cinder.key
+   limit: openstack-cpu-nodes
+   
+# finish using the instructions here http://ceph.com/docs/master/rbd/rbd-openstack/
