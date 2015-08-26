@@ -3,6 +3,7 @@
  - name: Installed required packages for HA deployment
    apt: pkg={{ item }} state=installed
    with_items:
+   - linux-server
    - pacemaker
    - rabbitmq-server
    - crmsh
@@ -29,10 +30,6 @@
    with_items:
    - echo mysql-server mysql-server/root_password select {{ keystone_admin_pass }} | debconf-set-selections
    - echo mysql-server mysql-server/root_password_again select {{ keystone_admin_pass }} | debconf-set-selections
-
- - name: Install the package linux-server if this is a virtual host
-   apt: pkg=linux-server state=installed
-   when: mysql_storage_device.find('vd') != -1
 
  - name: Copy the templated corosysc.conf file
    template: src=corosync.j2 dest={{ item }}/corosync.conf mode=644 owner=root group=root
@@ -202,10 +199,10 @@
  - name: Copy the templated my.cnf
    template: src=my.j2 dest=/etc/mysql/my.cnf
 
-  - name: Copy the RabbitMQ erlang cookie from the master
-    synchronize: mode=pull src=/var/lib/rabbitmq/.erlang.cookie dest=/var/lib/rabbitmq/.erlang.cookie
-    delegate_to: "{{ openstack_ctl_slave }}"    
-    run_once: yes
+ - name: Copy the RabbitMQ erlang cookie from the master
+   synchronize: mode=pull src=/var/lib/rabbitmq/.erlang.cookie dest=/var/lib/rabbitmq/.erlang.cookie
+   delegate_to: "{{ openstack_ctl_slave }}"    
+   run_once: yes
 
  - name: Mount the new xfs filesystems and initialise them
    shell: "{{ item }}"
