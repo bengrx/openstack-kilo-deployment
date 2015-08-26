@@ -1,5 +1,11 @@
 ---
 
+ - name: Install ceph packages
+   apt: pkg={{ item }}
+   with_items:
+   - python-rbd
+   when: cinder_storage_device == "ceph"
+
  - name: Ensure that the lvm2 package is installed
    apt: pkg=lvm2 state=installed
 
@@ -15,7 +21,7 @@
 
  - name: Provision the cinder device
    shell: echo -e "o\nn\np\n1\n\n\nw" | fdisk /dev/{{ cinder_storage_device }}
-   when: device_count.stdout.find('1') == -1
+   when: device_count.stdout.find('1') == -1 and cinder_storage_device != "ceph"
 
  - name: Determine if the target cinder lv is provisioned
    shell: pvs | grep "/dev/{{ cinder_storage_device }}1" | wc -l
@@ -23,7 +29,7 @@
 
  - name: Create the physical volume
    shell: pvcreate /dev/{{ cinder_storage_device }}1
-   when: device_count.stdout.find('1') == -1
+   when: device_count.stdout.find('1') == -1 and cinder_storage_device != "ceph"
 
  - name: Determine if the target cinder vg is provisioned
    shell: vgs | grep cinder-volumes | wc -l
@@ -31,13 +37,15 @@
 
  - name: Create the volume group
    shell: vgcreate cinder-volumes "/dev/{{ cinder_storage_device }}1"
-   when: device_count.stdout.find('1') == -1
+   when: device_count.stdout.find('1') == -1 and cinder_storage_device != "ceph"
 
  - name: Copy the templated lvm.conf file
    template: src=lvm.conf dest=/etc/lvm/lvm.conf
+   when: cinder_storage_device != "ceph"
 
- - name: Copy the templated cinder.conf file
+ - name: Copy the templated cinder.conf file (LVM based deployment)
    template: src=cinder.conf dest=/etc/cinder/cinder.conf
+   when: cinder_storage_device != "ceph"
 
  - name: Ensure that the tgt service is restarted
    shell: service tgt restart

@@ -1,5 +1,9 @@
 ---
 
+ - name: install packages required my ceph based deployment
+   apt: pkg=python-rbd state=installed
+   when: cinder_storage_device == "ceph"
+
  - name: Ensure that the cinder-api package is installed
    apt: pkg=cinder-api state=installed
 
@@ -11,6 +15,11 @@
 
  - name: Copy the templated cinder.conf file
    template: src=cinder.conf dest=/etc/cinder/cinder.conf
+   when: cinder_storage_device != "ceph"
+
+ - name: Copy the templated cinder.conf file
+   template: src=cinder-ceph.conf dest=/etc/cinder/cinder.conf
+   when: cinder_storage_device == "ceph"
 
  - name: Populate the block storage database
    shell: su -s /bin/sh -c "cinder-manage db sync" cinder; sleep 1

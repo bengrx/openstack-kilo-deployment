@@ -119,7 +119,7 @@ getValue default_ntp_server 0.uk.pool.ntp.org "\t\t"
 getValue cinder_storage_device vdb "\t\t"
 getValue mysql_storage_device vdc "\t\t"
 getValue rabbitmq_storage_device vdd "\t\t"
-
+getValue rbd_secret "457eb676-33da-42ec-9a8c-9293d545c337" "\t\t\"
 export GREP_COLOR="01;32"
 echo -e "$LINE_BREAK"
 echo -e "Seting Up OpenStack Authentication Tokens" | grep -E ".*" --color=auto

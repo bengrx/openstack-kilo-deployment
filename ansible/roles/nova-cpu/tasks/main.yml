@@ -10,8 +10,13 @@
    shell: hostname
    register: ansible_hostname
 
- - name: Copy the templated nova.conf file
+ - name: Copy the templated nova.conf file (LVM based deployment)
    template: src=nova.conf dest=/etc/nova/nova.conf
+   when: cinder_storage_device != "ceph"
+
+ - name: Copy the templated nova.conf file (Ceph based deployment)
+   template: src=nova-ceph.conf dest=/etc/nova/nova.conf
+   when: cinder_storage_device == "ceph"
 
  - name: Determine the CPU type
    shell: cat /proc/cpuinfo | grep "vmx\|svm" | wc -l
