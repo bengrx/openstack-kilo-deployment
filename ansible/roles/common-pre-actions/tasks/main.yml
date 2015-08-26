@@ -7,6 +7,9 @@
    apt: update_cache=yes
    sudo: yes
 
+ - name: Ensure that ceph-common is installed
+   apt: pkg=ceph-common state=installed
+
  - name: Ensure package ntp is installed
    apt: pkg=ntp state=installed
    sudo: yes
@@ -85,23 +88,24 @@
    run_once: yes
    when: cinder_storage_device == "ceph"
 
- - name: Install the nova-compute keyring on computation nodes
+ - name: Install the nova-compute keyring on cpu nodes
    shell: ceph auth get-or-create client.cinder | ssh {your-nova-compute-server} sudo tee /etc/ceph/ceph.client.cinder.keyring
+   when: cinder_storage_device == "ceph"
 
  - name: Copy the nova-compute keyring to cpu hosts    
    synchronize: mode=pull src=/etc/ceph/ceph.client.cinder.keyring  dest=/etc/ceph/ceph.client.cinder.keyring
    delegate_to: "{{ openstack_ctl_master }}"
    when: cinder_storage_device == "ceph"
-   limit: openstack-cpu-nodes
 
  - name: Create a temporary copy of the secret key on the nodes running nova-compute
    shell: ceph auth get-key client.cinder
    register: cinder_client_secret
    delegate_to: "{{ openstack_ctl_master }}"
    run_once: yes
+   when: cinder_storage_device == "ceph"
 
  - name: Copy the secret key to cpu nodes
    shell: echo "{{ cinder_client_secret.stdout }}">/etc/ceph/client.cinder.key
-   limit: openstack-cpu-nodes
+   when: cinder_storage_device == "ceph"
    
 # finish using the instructions here http://ceph.com/docs/master/rbd/rbd-openstack/

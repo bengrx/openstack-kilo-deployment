@@ -204,12 +204,12 @@
  - name: Get the erlang cookie from the master
    shell: cat /var/lib/rabbitmq/.erlang.cookie
    register: erlang_cookie
-   delegate_to: "{{ openstack-ctl-master-node }}"
+   delegate_to: "{{ openstack_ctl_master }}"
    run_once: yes
 
  - name: Create the erlang cookie on the slave
    shell: echo "{{ erlang_cookie.stdout }}" >/var/lib/rabbitmq/.erlang.cookie
-   delegate_to: "{{ openstack-ctl-slave-node }}"
+   delegate_to: "{{ openstack_ctl_slave }}"
    run_once: yes
 
  - name: Mount the new xfs filesystems and initialise them
@@ -230,21 +230,8 @@
    run_once: yes
    failed_when: 6 == 9
 
-# - name: Add mysql resource to pacemaker
-#   script: configure-mysql-pacemaker.sh "{{ ctl_vip }}"
-#   delegate_to: "{{ openstack_ctl_master }}"
-#   run_once: yes
-
- - name: Copy the mysql resource script to the target
-   copy: src=configure-mysql-pacemaker.sh dest=/tmp/configure-mysql-pacemaker.sh
-   delegate_to: "{{ openstack_ctl_master }}"
-   run_once: yes
-
- - name: execute the mysql resource script
-   shell: "{{ item }}"
-   with_items:
-   - chmod +x /tmp/configure-mysql-pacemaker.sh
-   - /tmp/configure-mysql-pacemaker.sh "{{ ctl_vip }}"
+ - name: Add mysql resource to pacemaker
+   script: configure-mysql-pacemaker.sh "{{ ctl_vip }}"
    delegate_to: "{{ openstack_ctl_master }}"
    run_once: yes
 
@@ -255,18 +242,7 @@
    - pacemaker
 
  - name: restart the node
-   command: shutdown -r now "Ansible updates triggered"
+   command: shutdown -r now "HA Stack deployment triggered"
    async: 0
    poll: 0
    ignore_errors: true
-   delegate_to: "{{ openstack_ctl_slave }}"
-
- - name: waiting for node to come back online
-   delegate_to: 127.0.0.1
-   wait_for: host={{ openstack_ctl_slave }}
-             state=started
-             port=22
-             delay=15
-             timeout=300
-             connect_timeout=15
-   sudo: false

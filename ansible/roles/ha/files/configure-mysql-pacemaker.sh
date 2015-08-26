@@ -16,4 +16,3 @@ crm configure ms ms_drbd_mysql p_drbd_mysql meta notify="true" clone-max="2"
 crm configure colocation c_mysql_on_drbd inf: g_mysql ms_drbd_mysql:Master
 crm configure order o_drbd_before_mysql inf: ms_drbd_mysql:promote g_mysql:start
 crm configure commit
-exit 0
