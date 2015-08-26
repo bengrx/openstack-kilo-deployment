@@ -1,6 +1,6 @@
 ---
 
-- hosts: openstack-ctl-master:openstack-ctl-slave
+- hosts: openstack-ctl-master-node:openstack-ctl-slave-node
 
   gather_facts: True
 
@@ -8,5 +8,4 @@
 
   roles:
 
-    - prepare-drbd-vgs
-
+  - ha-lvs
