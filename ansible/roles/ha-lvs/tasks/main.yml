@@ -1,0 +1,4 @@
+---
+
+ - name: Prepare the VG and LVS for mysql and rabbit for use by drbd
+   script: prepare-ha-lvs.sh 

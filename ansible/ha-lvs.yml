@@ -1,0 +1,12 @@
+---
+
+- hosts: openstack-ctl-master:openstack-ctl-slave
+
+  gather_facts: True
+
+  sudo: yes
+
+  roles:
+
+    - prepare-drbd-vgs
+
