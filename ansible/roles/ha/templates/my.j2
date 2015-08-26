@@ -44,18 +44,19 @@ skip-external-locking
 #
 # Instead of skip-networking the default is now to listen only on
 # localhost which is more compatible and is not less secure.
+
 bind-address		= {{ ctl_vip }}
 #
 # * Fine Tuning
 #
-key_buffer		= 16M
-max_allowed_packet	= 16M
+key_buffer		= 32M
+max_allowed_packet	= 256M
 thread_stack		= 192K
 thread_cache_size       = 8
 # This replaces the startup script and checks MyISAM tables if needed
 # the first time they are touched
 myisam-recover         = BACKUP
-#max_connections        = 100
+max_connections        = 3000
 #table_cache            = 64
 #thread_concurrency     = 10
 #
@@ -85,7 +86,7 @@ log_error = /var/log/mysql/error.log
 # note: if you are setting up a replication slave, see README.Debian about
 #       other settings you may need to change.
 #server-id		= 1
-#log_bin			= /var/log/mysql/mysql-bin.log
+#log_bin		= /var/log/mysql/mysql-bin.log
 expire_logs_days	= 10
 max_binlog_size         = 100M
 #binlog_do_db		= include_database_name
@@ -107,7 +108,11 @@ max_binlog_size         = 100M
 # ssl-cert=/etc/mysql/server-cert.pem
 # ssl-key=/etc/mysql/server-key.pem
 
-
+default-storage-engine = innodb
+innodb_file_per_table
+collation-server = utf8_general_ci
+init-connect = 'SET NAMES utf8'
+character-set-server = utf8
 
 [mysqldump]
 quick

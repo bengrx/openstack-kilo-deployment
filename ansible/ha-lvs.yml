@@ -1,0 +1,11 @@
+---
+
+- hosts: openstack-ctl-master-node:openstack-ctl-slave-node
+
+  gather_facts: True
+
+  sudo: yes
+
+  roles:
+
+  - ha-lvs

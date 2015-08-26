@@ -3,6 +3,7 @@
  - name: Installed required packages for HA deployment
    apt: pkg={{ item }} state=installed
    with_items:
+   - linux-server
    - pacemaker
    - rabbitmq-server
    - crmsh
@@ -29,10 +30,6 @@
    with_items:
    - echo mysql-server mysql-server/root_password select {{ keystone_admin_pass }} | debconf-set-selections
    - echo mysql-server mysql-server/root_password_again select {{ keystone_admin_pass }} | debconf-set-selections
-
- - name: Install the package linux-server if this is a virtual host
-   apt: pkg=linux-server state=installed
-   when: mysql_storage_device.find('vd') != -1
 
  - name: Copy the templated corosysc.conf file
    template: src=corosync.j2 dest={{ item }}/corosync.conf mode=644 owner=root group=root
@@ -159,13 +156,13 @@
    - drbdadm up rabbitmql
    failed_when: 6 == 9
 
- - name: Force mysql drbd service in to secondary on second nodes to prevent writes
-   shell: drbdadm secondary "{{ item }}"
-   with_items:
-   - mysql
-   - rabbitmq
-   delegate_to: "{{ openstack_ctl_slave }}"
-   run_once: yes
+# - name: Force mysql drbd service in to secondary on second nodes to prevent writes
+#   shell: drbdadm secondary "{{ item }}"
+#   with_items:
+#   - mysql
+#   - rabbitmq
+#   delegate_to: "{{ openstack_ctl_slave }}"
+#   run_once: yes
    
 
  - name: Force mysql drbd device into R/W mode on master
@@ -185,27 +182,35 @@
 
  - name: Format the backing device used by MySQL / DRBD
    shell: echo -e "o\nn\np\n1\n\n\nw" | fdisk /dev/{{ mysql_storage_device }}
+   failed_when: 6 == 9
 
  - name: Format the backing device used by RabbitMQ / DRBD
    shell: echo -e "o\nn\np\n1\n\n\nw" | fdisk /dev/{{ rabbitmq_storage_device }}
+   failed_when: 6 == 9
 
  - name: Create a new filesystem on /dev/drbd0 device on the master
-   shell: mkfs -t xfs -f /dev/drbd0
+   shell: mkfs -t xfs -f /dev/drbd/by-res/mysql/0
    delegate_to: "{{ openstack_ctl_master }}"
    run_once: yes
 
  - name: Create a new filesystem on /dev/drbd1 device on the master
-   shell: mkfs -t xfs -f /dev/drbd1
+   shell: mkfs -t xfs -f /dev/drbd/by-res/rabbitmq/0
    delegate_to: "{{ openstack_ctl_master }}"
    run_once: yes
 
  - name: Copy the templated my.cnf
    template: src=my.j2 dest=/etc/mysql/my.cnf
 
-  - name: Copy the RabbitMQ erlang cookie from the master
-    synchronize: mode=pull src=/var/lib/rabbitmq/.erlang.cookie dest=/var/lib/rabbitmq/.erlang.cookie
-    delegate_to: "{{ openstack_ctl_slave }}"    
-    run_once: yes
+ - name: Get the erlang cookie from the master
+   shell: cat /var/lib/rabbitmq/.erlang.cookie
+   register: erlang_cookie
+   delegate_to: "{{ openstack-ctl-master-node }}"
+   run_once: yes
+
+ - name: Create the erlang cookie on the slave
+   shell: echo "{{ erlang_cookie.stdout }}" >/var/lib/rabbitmq/.erlang.cookie
+   delegate_to: "{{ openstack-ctl-slave-node }}"
+   run_once: yes
 
  - name: Mount the new xfs filesystems and initialise them
    shell: "{{ item }}"
