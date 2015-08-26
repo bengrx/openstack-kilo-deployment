@@ -1,0 +1,17 @@
+---
+
+ - name: restart the node
+   command: shutdown -r now "Openstack deployment completed"
+   async: 0
+   poll: 0
+   ignore_errors: true
+
+ - name: waiting for node to come back online
+   delegate_to: 127.0.0.1
+   wait_for: host={{ inventory_hostname }}
+             state=started
+             port=22
+             delay=15
+             timeout=300
+             connect_timeout=15
+   sudo: false

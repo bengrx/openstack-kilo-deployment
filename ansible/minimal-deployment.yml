@@ -14,3 +14,5 @@
  - include: cinder-ctl.yml
  - include: heat.yml
 # - include: ceilometer-ctl.yml
+ - include: common-post-actions.yml
+
