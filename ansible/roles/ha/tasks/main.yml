@@ -52,6 +52,9 @@
  - name: Execute update-rc.d for mysql to be disabled on boot
    shell: update-rc.d mysql disable
 
+ - name: Execute update-rc.d for rabbitmq to be disbaled on boot
+   shell: update-rc.d rabbitmq-server disable
+
  - name: Check health status of primary corosync ring
    shell: corosync-cfgtool -s | grep "ring 0 active with no faults" | wc -l
    register: corosync_ring_health
@@ -230,13 +233,36 @@
    run_once: yes
    failed_when: 6 == 9
 
- - name: Add mysql resource to pacemaker
-   script: configure-mysql-pacemaker.sh "{{ ctl_vip }}"
+ - name: Restart cluster services
+   service: name="{{ item }}" state=started
+   with_items:
+   - pacemaker
+   - corosync
+
+ - name: Delay for 20 seconds to allow the cluster to come up
+   shell: sleep 20
    delegate_to: "{{ openstack_ctl_master }}"
    run_once: yes
 
+ - name: Add mysql resource to pacemaker
+   script: configure-mysql-pacemaker.sh "{{ ctl_vip }}"
+   delegate_to: "{{ openstack_ctl_master }}"
+   failed_when: 6 == 9
+
+ - name: Add rabbit resource to pacemaker
+   script: configure-rabbitmq-pacemaker.sh "{{ ctl_vip }}"
+   delegate_to: "{{ openstack_ctl_master }}"
+   failed_when: 6 == 9
+
  - name: Start the cluster services
-   service: name={{ item }} state=restarted
+   service: name={{ item }} state=started
+   with_items:
+   - drbd
+   - corosync
+   - pacemaker
+
+ - name: Execute update-rc.d for cluster services to start on boot
+   shell: update-rc.d "{{ item }}" enable
    with_items:
    - corosync
    - pacemaker
