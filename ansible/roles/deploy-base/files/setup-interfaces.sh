@@ -39,3 +39,5 @@ ifup p4p2
 ifup em1
 ifup em2
 
+sed -i 's/production/openstack_brighton/g' /etc/puppet/puppet.conf
+
