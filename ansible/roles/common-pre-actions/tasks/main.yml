@@ -88,13 +88,24 @@
    run_once: yes
    when: cinder_storage_device == "ceph"
 
- - name: Install the nova-compute keyring on cpu nodes
-   shell: ceph auth get-or-create client.cinder | ssh {your-nova-compute-server} sudo tee /etc/ceph/ceph.client.cinder.keyring
+ - name: Get the nova-compute keyring
+   shell: ceph auth get-or-create client.cinder 
+   delegate_to: "{{ openstack_ctl_master }}"   
+   register: nova_keyring
    when: cinder_storage_device == "ceph"
 
- - name: Copy the nova-compute keyring to cpu hosts    
-   synchronize: mode=pull src=/etc/ceph/ceph.client.cinder.keyring  dest=/etc/ceph/ceph.client.cinder.keyring
+ - name: Install the nova-compute keyring on cpu nodes
+   shell: echo "{{ nova_keyring }}" /etc/ceph/ceph.client.cinder.keyring
+   when: cinder_storage_device == "ceph"
+
+ - name: Get the nova compute keyring
+   shell: cat /etc/ceph/ceph.client.cinder.keyring 
+   register: client_cinder_keyring
    delegate_to: "{{ openstack_ctl_master }}"
+   when: cinder_storage_device == "ceph"
+
+ - name: Copy the nova-compute keyring
+   shell: echo "{{ client_cinder_keyring.stdout }}" >/etc/ceph/ceph.client.cinder.keyring
    when: cinder_storage_device == "ceph"
 
  - name: Create a temporary copy of the secret key on the nodes running nova-compute
