@@ -152,7 +152,6 @@ generatePassword ceilometer_pass ceilometerpass "\t\t\t"
 export GREP_COLOR="01;32"
 echo -e "$LINE_BREAK"
 echo -e "Set Deployment Environment Configuration" | grep -E ".*" --color=auto
-echo -e "\n[deployment-node:vars]">>$BASE_PATH/$OUTPUT_HOSTS
 export GREP_COLOR="01;33"
 
 # Get deployment host vars
