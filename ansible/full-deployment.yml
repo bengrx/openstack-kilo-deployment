@@ -1,7 +1,7 @@
 ---
 
 - include: common-pre-actions.yml
-- include: high-availability.yml
+#- include: high-availability.yml
 - include: database.yml
 - include: keystone.yml
 - include: glance.yml
@@ -15,4 +15,4 @@
 - include: cinder-storage.yml
 - include: cinder-ctl.yml
 - include: heat.yml
-- include: ceilometer-ctl.yml
+#- include: ceilometer-ctl.yml

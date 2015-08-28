@@ -20,8 +20,8 @@
    register: device_count
 
  - name: Provision the cinder device
-   shell: echo -e "o\nn\np\n1\n\n\nw" | fdisk /dev/{{ cinder_storage_device }}
-   when: device_count.stdout.find('1') == -1 and cinder_storage_device != "ceph"
+   shell: echo -e "d\nn\np\n1\n\n\nw" | fdisk /dev/{{ cinder_storage_device }}
+   when: device_count.stdout.find('1') == -1 or cinder_storage_device != "ceph"
 
  - name: Determine if the target cinder lv is provisioned
    shell: pvs | grep "/dev/{{ cinder_storage_device }}1" | wc -l
@@ -37,7 +37,7 @@
 
  - name: Create the volume group
    shell: vgcreate cinder-volumes "/dev/{{ cinder_storage_device }}1"
-   when: device_count.stdout.find('1') == -1 and cinder_storage_device != "ceph"
+   when: device_count.stdout.find('1') == -1 or cinder_storage_device != "ceph"
 
  - name: Copy the templated lvm.conf file
    template: src=lvm.conf dest=/etc/lvm/lvm.conf
