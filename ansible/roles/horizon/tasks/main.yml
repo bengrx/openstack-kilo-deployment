@@ -9,6 +9,9 @@
  - name: Copy the templated local_settings.py
    template: src=local_settings.py dest=/etc/openstack-dashboard/local_settings.py
 
+ - name: Copy the templated openstack-dashboard apache2 config
+   template: src=openstack-dashboard.conf dest=/etc/apache2/sites-enabled/openstack-dashboard.conf
+
  - name: Stop the keystone service
    shell: service keystone stop; sleep 1
 

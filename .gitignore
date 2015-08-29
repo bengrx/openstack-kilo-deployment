@@ -2,4 +2,5 @@ hosts*
 deploy_hosts
 ansible.cfg
 authorized_keys.*
+ldap_keystone
 .hosts
