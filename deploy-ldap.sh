@@ -4,7 +4,7 @@ CONFIG_FILE="$(dirname $0)/ldap_keystone"
 
 if [ ! -f $CONFIG_FILE ];then
 
-  echo -e "Config file was not found at $CONFIG_FILE"
+  echo -e "Config file was not found at $CONFIG_FILE. Generating sample config at $CONFIG_FILE"
   echo -e "url = ldap://localhost\nuser = dc=Manager,dc=example,dc=org\npassword = samplepassword\nsuffix = dc=example,dc=org\nuse_dumb_member = False\nallow_subtree_delete = False" >$CONFIG_FILE
 
   exit 1
