@@ -3,7 +3,6 @@
 - hosts: openstack-all-nodes
 
   gather_facts: True
-
   sudo: yes
 
   tasks: 

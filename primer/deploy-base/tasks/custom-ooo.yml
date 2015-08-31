@@ -1,4 +1,4 @@
 ---
 
  - name: Configure all interfaces (VM Profile)
-   script: config-interfaces-vm.sh
+   script: config-interfaces-vm.sh "{{ net_man_dev }} {{ net_tun_dev }} {{ net_ext_dev }} {{ net_stg_dev }}"
