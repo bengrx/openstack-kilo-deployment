@@ -4,6 +4,7 @@ CONFIG_FILE="openstack.cfg"
 CONFIG_TEMPLATE=".openstack.example"
 REGEX_IP="([0-9]{1,3}.){3}[0-9]{1,3}"
 
+touch $BASE_DIR/*.sh
 function error
 {
   if [ ! -z $2 ];then

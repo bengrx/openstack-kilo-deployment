@@ -4,7 +4,8 @@
 
   gather_facts: True
   sudo: yes
-  tasks: 
+  tasks:
 
+  - include: deploy-base/tasks/custom-supermicro.yml
   - include: deploy-base/tasks/copy-hosts.yml
   - include: deploy-base/tasks/ping-all.yml
