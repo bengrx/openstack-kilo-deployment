@@ -30,7 +30,6 @@ boot_domain			=	test
 default_email_address		=	user@domain.com
 default_ntp_server		=	0.uk.pool.ntp.org
 cinder_storage_device		=	sdb
-
 net_man_dev			=	eth0
 net_tun_dev			=	eth1
 net_ext_dev			=	eth2
@@ -38,7 +37,6 @@ net_stg_dev			=	eth3
 ha_mysql_storage_device		=	mapper/drbd-mysql
 ha_rabbitmq_storage_device	=	mapper/drbd-rabbit
 ha_base_device			=	sdb
-
 external_net_cidr		=	undefined
 floating_ip_start		=	undefined
 floating_ip_end			=	undefined
