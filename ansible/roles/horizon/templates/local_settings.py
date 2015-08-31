@@ -6,7 +6,7 @@ from openstack_dashboard import exceptions
 
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
-
+SESSION_TIMEOUT = 3600
 
 # WEBROOT is the location relative to Webserver root
 # should end with a slash.
