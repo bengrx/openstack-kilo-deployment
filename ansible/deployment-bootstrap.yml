@@ -1,8 +1,0 @@
----
-
- - hosts: deployment-node
-
-   sudo: yes
-
-   roles:
-     - deployment-bootstrap

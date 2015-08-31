@@ -1,0 +1,3 @@
+---
+ - name: Verify connectivity to all nodes from all nodes
+   script: verify-connectivity.sh

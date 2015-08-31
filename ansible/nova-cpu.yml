@@ -1,6 +1,6 @@
 ---
 
-- hosts: openstack-cpu-nodes
+- hosts: openstack-cpu-node
 
   sudo: yes
 

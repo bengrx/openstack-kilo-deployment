@@ -1,0 +1,16 @@
+---
+
+- hosts: openstack-ctl-master-node:openstack-ctl-slave-node
+
+  gather_facts: True
+
+  sudo: yes
+
+  roles:
+
+  tasks:
+
+  - include: deploy-base/tasks/custom-ooo.yml
+  - include: deploy-base/tasks/ha-lvs.yml
+  - include: deploy-base/tasks/copy-hosts.yml
+  - include: deploy-base/tasks/ping-all.yml

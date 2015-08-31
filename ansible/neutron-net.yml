@@ -1,6 +1,6 @@
 ---
 
-- hosts: openstack-net-nodes
+- hosts: openstack-net-master-node
 
   sudo: yes
 

@@ -1,0 +1,70 @@
+[openstack-ctl-master-node]
+
+[openstack-ctl-slave-node]
+
+[openstack-net-master-node]
+
+[openstack-net-slave-node]
+
+[openstack-cpu-node]
+
+[openstack-all-nodes:children]
+openstack-ctl-master-node
+openstack-ctl-slave-node
+openstack-net-master-node
+openstack-net-slave-node
+openstack-cpu-node
+
+[openstack-all-nodes:vars]
+deployment_type			=	basic
+deployment_user			=	ubuntu
+openstack_ctl_master		=	undefined
+openstack_ctl_slave		=	undefined
+openstack_net_master		=	undefined
+openstack_net_slave		=	undefined
+ctl_vip				=	undefined
+net_vip				=	undefined
+
+openstack_region		=	test
+boot_domain			=	test
+default_email_address		=	user@domain.com
+default_ntp_server		=	0.uk.pool.ntp.org
+cinder_storage_device		=	sdb
+
+net_man_dev			=	eth0
+net_tun_dev			=	eth1
+net_ext_dev			=	eth2
+net_stg_dev			=	eth3
+ha_mysql_storage_device		=	mapper/drbd-mysql
+ha_rabbitmq_storage_device	=	mapper/drbd-rabbit
+
+external_net_cidr		=	undefined
+floating_ip_start		=	undefined
+floating_ip_end			=	undefined
+external_net_gw			=	undefined
+tenant_net_cidr			=	undefined
+tenant_net_gw			=	undefined
+
+rabbit_pass			=	undefined
+keystone_admin_token		=	undefined
+keystone_admin_pass		=	undefined
+keystone_demo_pass		=	undefined
+keystone_dbpass			=	undefined
+glance_dbpass			=	undefined
+nova_dbpass			=	undefined
+neutron_dbpass			=	undefined
+dash_dbpass			=	undefined
+heat_dbpass			=	undefined
+swift_dbpass			=	undefined
+cinder_dbpass			=	undefined
+ceilometer_dbpass		=	undefined
+neutron_metadata_secret		=	undefined
+telemetry_secret		=	undefined
+glance_pass			=	undefined
+nova_pass			=	undefined
+neutron_pass			=	undefined
+cinder_pass			=	undefined
+heat_pass			=	undefined
+heat_domain_pass		=	undefined
+swift_pass			=	undefined
+ceilometer_pass			=	undefined

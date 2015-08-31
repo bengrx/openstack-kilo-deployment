@@ -4,5 +4,5 @@
    apt: pkg=lvm2 state=installed
 
  - name: Prepare the VG and LVS for mysql and rabbit for use by drbd
-   script: prepare-ha-lvs.sh 
+   script: config-ha-lvs.sh 
    failed_when: 6 == 9

@@ -1,9 +1,0 @@
-interface={{ boot_interface }}
-domain={{ boot_domain }}
-dhcp-range={{ boot_dhcp_range_begin }},{{ boot_dhcp_range_end }},{{ boot_mask }},{{ boot_dhcp_lease_time_hours }}
-dhcp-boot=pxelinux.0,pxeserver,{{ boot_interface_address }}
-pxe-service=x86PC, "Install Ubuntu 14.04 Trusty", pxelinux
-enable-tftp
-tftp-root=/srv/tftp
-dhcp-host=00:00:00:00:00:00,openstack-ctl-01,192.168.10.50,1h
-dhcp-host=00:00:00:00:00:00,openstack-cpu-01,192.168.10.100,1h

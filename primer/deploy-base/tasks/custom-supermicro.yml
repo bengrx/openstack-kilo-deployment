@@ -1,0 +1,4 @@
+---
+
+ - name: Configure all interfaces (Supermicro profile)
+   script: config-interfaces-supermico.sh

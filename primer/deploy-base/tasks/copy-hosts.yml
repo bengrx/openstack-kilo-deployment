@@ -1,0 +1,4 @@
+---
+
+ - name: Copy the /etc/hosts file from local .hosts
+   copy: src=../hosts dest=/etc/hosts
