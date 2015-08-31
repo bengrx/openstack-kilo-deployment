@@ -1,6 +1,6 @@
 ---
 
- - name: install packages required my ceph based deployment
+ - name: install packages required by ceph based deployment
    apt: pkg=python-rbd state=installed
    when: cinder_storage_device == "ceph"
 
