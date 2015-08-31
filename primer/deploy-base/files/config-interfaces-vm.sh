@@ -15,6 +15,6 @@ do
   else
     echo -e "auto $interface\niface $interface inet manual\n  up ip link set dev $interface up\n  down ip link set dev $interface down" >/etc/network/interfaces.d/$interface.cfg
   fi
-  ifup $interface 2>/dev/null
+  ifup $interface &>/dev/null
 done
-
+exit 0
