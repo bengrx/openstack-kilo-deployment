@@ -1,0 +1,11 @@
+---
+
+- hosts: openstack-all-nodes
+
+  gather_facts: True
+  sudo: yes
+  tasks:
+
+  - include: deploy-base/tasks/ooo-ha.yml
+  - include: deploy-base/tasks/copy-hosts.yml
+  - include: deploy-base/tasks/ping-all.yml

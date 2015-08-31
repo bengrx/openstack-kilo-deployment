@@ -2,7 +2,7 @@
 target_device="vdb"
 vg_name="drbd"
 mysql_capacity="10G"
-rabbit_capacity="15G"
+rabbit_capacity="8G"
 
 vgcreate "$vg_name" "/dev/$target_device" &>/dev/null
 lvcreate "$vg_name" -n mysql -L"$mysql_capacity" &>/dev/null
