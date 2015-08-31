@@ -80,6 +80,8 @@ function validateConfig
   validateGroupHasMember "openstack-ctl-master-node"
   validateGroupHasMember "openstack-net-master-node"
   validateGroupHasMember "openstack-cpu-node"
+  setProperty "deployment_type" read "$(getProperty deployment_type)"
+  setProperty "deployment_user" read "$(getProperty deployment_user)"
   deployment="$(cat $BASE_DIR/$CONFIG_FILE | grep deployment_type | grep ha | wc -l | sed 's/0/basic/g' | sed 's/1/ha/g')"
   setProperty "openstack_ctl_master" "$(getFirstMember openstack-ctl-master-node)"
   setProperty "openstack_net_master" "$(getFirstMember openstack-net-master-node)"
@@ -97,8 +99,6 @@ function validateConfig
     setProperty "net_vip" read "$(getProperty net_vip)"
   fi
 
-
-  setProperty "deployment_user" read "$(getProperty deployment_user)"
   setProperty "openstack_region" read "$(getProperty openstack_region)"
   setProperty "boot_domain" read "$(getProperty boot_domain)"
   setProperty "cinder_storage_device" read "$(getProperty cinder_storage_device)"
