@@ -1,6 +1,6 @@
 resource rabbitmq {
   device    minor 1;
-  disk      "/dev/{{ rabbitmq_storage_device }}";
+  disk      "/dev/{{ ha_rabbitmq_storage_device }}";
   meta-disk internal;
   on {{ hostname_master.stdout }} {
     address ipv4 {{ openstack_ctl_master }}:7701;

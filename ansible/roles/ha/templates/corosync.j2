@@ -20,7 +20,7 @@ totem {
 		# identical instances of this configuration file
 		# across all your cluster nodes, without having to
 		# modify this option.
-		bindnetaddr: {{ corosync_network_address }}
+		bindnetaddr: {{ corosync_network_address.stdout }}
 		broadcast: yes
 		# However, if you have multiple physical network
 		# interfaces configured for the same subnet, then the

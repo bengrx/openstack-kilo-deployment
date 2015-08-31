@@ -31,6 +31,10 @@
    - echo mysql-server mysql-server/root_password select {{ keystone_admin_pass }} | debconf-set-selections
    - echo mysql-server mysql-server/root_password_again select {{ keystone_admin_pass }} | debconf-set-selections
 
+ - name: Get the address of the management network
+   script: get-management-ip.sh "{{ net_man_dev }}"
+   register: corosync_network_address
+
  - name: Copy the templated corosysc.conf file
    template: src=corosync.j2 dest={{ item }}/corosync.conf mode=644 owner=root group=root
    with_items:
@@ -159,14 +163,14 @@
    - drbdadm up rabbitmql
    failed_when: 6 == 9
 
-# - name: Force mysql drbd service in to secondary on second nodes to prevent writes
-#   shell: drbdadm secondary "{{ item }}"
-#   with_items:
-#   - mysql
-#   - rabbitmq
-#   delegate_to: "{{ openstack_ctl_slave }}"
-#   run_once: yes
-   
+ - name: Force mysql drbd service in to secondary on second nodes to prevent writes
+   shell: drbdadm secondary "{{ item }}"
+   with_items:
+   - mysql
+   - rabbitmq
+   delegate_to: "{{ openstack_ctl_slave }}"
+   run_once: yes
+  
 
  - name: Force mysql drbd device into R/W mode on master
    shell: drbdadm -- --force primary "{{ item }}"
@@ -184,11 +188,11 @@
    failed_when: 6 == 9
 
  - name: Format the backing device used by MySQL / DRBD
-   shell: echo -e "o\nn\np\n1\n\n\nw" | fdisk /dev/{{ mysql_storage_device }}
+   shell: echo -e "o\nn\np\n1\n\n\nw" | fdisk /dev/{{ ha_mysql_storage_device }}
    failed_when: 6 == 9
 
  - name: Format the backing device used by RabbitMQ / DRBD
-   shell: echo -e "o\nn\np\n1\n\n\nw" | fdisk /dev/{{ rabbitmq_storage_device }}
+   shell: echo -e "o\nn\np\n1\n\n\nw" | fdisk /dev/{{ ha_rabbitmq_storage_device }}
    failed_when: 6 == 9
 
  - name: Create a new filesystem on /dev/drbd0 device on the master

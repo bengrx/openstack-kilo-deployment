@@ -41,7 +41,7 @@ if [ -z $playbook ];then
 
   printMessage "Server preparation play \"$playbook\" was not found in $BASE_DIR/primer/" "r"
   printMessage "Found the following possible target plays:" "b"
-  ls -lrt $BASE_DIR/primer/*.yml | awk '{print " ",$9}' | sed 's/.*\///g' | grep ".*" --color=auto
+  ls -lrt $BASE_DIR/primer/*.yml | awk '{print " ",$9}' | sed 's/.*\///g' | sort | grep ".*" --color=auto
   echo $LINE_BREAK
   error "Please select one of the targets next time" "10"
 fi
