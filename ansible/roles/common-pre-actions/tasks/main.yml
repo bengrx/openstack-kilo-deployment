@@ -9,6 +9,7 @@
 
  - name: Ensure that ceph-common is installed
    apt: pkg=ceph-common state=installed
+   when: cinder_storage_device == "ceph"
 
  - name: Ensure package ntp is installed
    apt: pkg=ntp state=installed
