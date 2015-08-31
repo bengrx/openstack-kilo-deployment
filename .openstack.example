@@ -37,6 +37,7 @@ net_ext_dev			=	eth2
 net_stg_dev			=	eth3
 ha_mysql_storage_device		=	mapper/drbd-mysql
 ha_rabbitmq_storage_device	=	mapper/drbd-rabbit
+ha_base_device			=	sdb
 
 external_net_cidr		=	undefined
 floating_ip_start		=	undefined

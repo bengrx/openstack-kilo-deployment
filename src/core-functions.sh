@@ -97,6 +97,9 @@ function validateConfig
     setProperty "openstack_net_slave" "$(getFirstMember openstack-net-slave-node)"
     setProperty "ctl_vip" read "$(getProperty ctl_vip)"
     setProperty "net_vip" read "$(getProperty net_vip)"
+    setProperty "ha_mysql_storage_device" read "$(getProperty ha_mysql_storage_device)"
+    setProperty "ha_rabbitmq_storage_device" read "$(getProperty ha_rabbitmq_storage_device)"
+    setProperty "ha_base_device" read "$(getProperty ha_base_device)"
   fi
 
   setProperty "openstack_region" read "$(getProperty openstack_region)"
